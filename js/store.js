@@ -52,10 +52,16 @@ const SRM = {
   },
   viewsOf(id) { return this.stats().views[id] || 0; },
 
-  /* --- настройки (в т.ч. ключ OpenAI для ИИ-проверки) --- */
+  /* --- настройки (в т.ч. ключ OpenAI для ИИ-проверки) ---
+     Ключ НЕ хранится в коде (репозиторий публичный, GitHub блокирует секреты).
+     Вставляется один раз в админке → «Настройки» и живёт только в браузере. */
+  DEFAULT_MODEL: "gpt-4o-mini",
   settings() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_SETTINGS)) || {}; }
-    catch (e) { return {}; }
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(this.KEY_SETTINGS)) || {}; }
+    catch (e) { s = {}; }
+    if (!s.model) s.model = this.DEFAULT_MODEL;
+    return s;
   },
   saveSettings(obj) {
     localStorage.setItem(this.KEY_SETTINGS, JSON.stringify({ ...this.settings(), ...obj }));

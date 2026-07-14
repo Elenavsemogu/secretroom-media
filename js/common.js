@@ -58,7 +58,7 @@ function srmFooter() {
         <a class="logo" href="index.html" style="margin-bottom:14px">
           ${SRM_LOGO}<span class="name" style="color:var(--paper)">Secret Room<span>MEDIA</span></span>
         </a>
-        <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Дерзкий бэкстейдж iGaming-рынка. Новости, скандалы, разборы и та самая чернуха, о которой все молчат.</p>
+        <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Дерзкий бэкстейдж iGaming-рынка. Скандалы, разборы и самые свежие новости индустрии.</p>
       </div>
       <div>
         <h4>Разделы</h4>
