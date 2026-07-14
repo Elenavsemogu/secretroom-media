@@ -170,10 +170,7 @@
           <div class="seo-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
               <strong style="text-transform:uppercase">🔍 SEO-метки <span style="font-weight:500;font-size:12px;color:var(--gray)">чтобы находили в Google</span></strong>
-              <span style="display:flex;gap:8px">
-                <button class="mini-btn" id="seo-ai" style="background:var(--lime)">🤖 Только SEO</button>
-                <button class="mini-btn" id="seo-auto">Быстро без ИИ</button>
-              </span>
+              <button class="mini-btn" id="seo-ai" style="background:var(--lime)">Заполнить SEO с ИИ</button>
             </div>
             <div class="field" style="margin-top:12px">
               <label>SEO-заголовок (title) <span class="hint">до 60 символов</span></label>
@@ -197,15 +194,14 @@
             </div>
           </div>
 
-          <!-- ИИ-проверка + SEO -->
+          <!-- ИИ-проверка -->
           <div class="ai-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-              <strong style="text-transform:uppercase">🤖 ИИ перед публикацией</strong>
-              <button class="btn" id="ai-check">Проверить всё ИИ</button>
+              <strong style="text-transform:uppercase">🤖 Проверка перед публикацией</strong>
+              <button class="btn" id="ai-check">Проверить на ошибки</button>
             </div>
             <p style="font-size:13px;margin-top:8px;line-height:1.5">
-              <strong>1.</strong> Вычитка — только орфография и пунктуация (сленг и мат не трогает, до 5 замечаний).<br>
-              <strong>2.</strong> SEO — автоматически заполнит поля выше: title, description, ключевые слова и теги по тексту поста.
+              Проверит <strong>только орфографию и пунктуацию</strong>. Сленг, мат и дерзкий тон не трогает. Даст до 5 коротких замечаний с цитатой из текста или напишет «можно публиковать».
             </p>
             <div class="ai-result" id="ai-result"></div>
           </div>

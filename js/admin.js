@@ -55,11 +55,10 @@
 
     // счётчики SEO + превью SERP
     ["f-seo-title", "f-seo-desc", "f-title", "f-dek"].forEach(id => $(id).addEventListener("input", updateSeoUI));
-    $("seo-auto").addEventListener("click", autoSeo);
     $("seo-ai").addEventListener("click", seoAI);
     updateSeoUI();
 
-    // ИИ-проверка текста
+    // ИИ-проверка на ошибки
     $("ai-check").addEventListener("click", aiCheck);
 
     // публикация
@@ -85,18 +84,6 @@
     counter($("c-desc"), $("f-seo-desc").value.length, 160);
     $("serp-title").textContent = t || "Заголовок появится здесь";
     $("serp-desc").textContent = d || "Описание появится здесь";
-  }
-  function autoSeo() {
-    const title = $("f-title").value.trim();
-    const dek = $("f-dek").value.trim();
-    if (!title) { toast("Сначала впиши заголовок"); return; }
-    $("f-seo-title").value = (title.length > 57 ? title.slice(0, 57) + "…" : title) + "";
-    $("f-seo-desc").value = dek ? (dek.length > 157 ? dek.slice(0, 157) + "…" : dek) : title;
-    const words = (title + " " + dek).toLowerCase().replace(/[^a-zа-я0-9\s]/gi, "").split(/\s+/)
-      .filter(w => w.length > 4).slice(0, 5);
-    $("f-seo-keys").value = [...new Set(words)].join(", ");
-    updateSeoUI();
-    toast("SEO-поля заполнены — проверь и поправь");
   }
 
   /* ---------- загрузка и сжатие картинки ---------- */
@@ -187,7 +174,7 @@
     }
   }
 
-  /* ---------- ИИ: вычитка + SEO одной кнопкой ---------- */
+  /* ---------- ИИ: только вычитка на ошибки ---------- */
   async function aiCheck() {
     const model = SRM_STORE.settings().model || "gpt-4o-mini";
     const box = $("ai-result");
@@ -195,40 +182,13 @@
     if (!text || text.length < 10) { toast("Сначала напиши текст"); return; }
 
     box.style.display = "block";
-    box.textContent = "🤖 Вычитка + подбор SEO…";
+    box.textContent = "🤖 Проверяю на ошибки…";
     $("ai-check").disabled = true;
 
-    let proofText = "";
-    let seoOk = false;
-
     try {
-      const [proofSettled, seoSettled] = await Promise.allSettled([
-        callAI("proof", text),
-        callAI("seo", text)
-      ]);
-
-      if (proofSettled.status === "fulfilled") {
-        proofText = proofSettled.value;
-      } else {
-        proofText = "⚠️ Вычитка: " + proofSettled.reason.message;
-      }
-
-      if (seoSettled.status === "fulfilled") {
-        try {
-          const seo = JSON.parse(seoSettled.value);
-          applySeo(seo);
-          seoOk = true;
-        } catch (_) {
-          proofText += "\n\n⚠️ SEO: ИИ вернул не JSON, нажми «Только SEO» ещё раз.";
-        }
-      } else {
-        proofText += "\n\n⚠️ SEO: " + seoSettled.reason.message;
-      }
-
-      box.textContent = proofText + (seoOk ? "\n\n✓ SEO-поля заполнены автоматически (title, description, ключи, теги) — проверь выше." : "");
-      if (seoOk) toast("Вычитка готова, SEO заполнено");
+      const proofText = await callAI("proof", text);
+      box.textContent = proofText || "Пустой ответ от ИИ.";
     } catch (e) {
-      // запасной путь — только вычитка через личный ключ
       const key = SRM_STORE.settings().openaiKey;
       if (!key) {
         box.textContent = "Не удалось: " + e.message;
@@ -248,8 +208,7 @@
           })
         });
         const data2 = await res2.json();
-        box.textContent = (data2.error ? ("Ошибка: " + data2.error.message) : data2.choices?.[0]?.message?.content)
-          + "\n\n⚠️ SEO не заполнено — сервер недоступен. Нажми «Только SEO» или «Быстро без ИИ».";
+        box.textContent = data2.error ? ("Ошибка: " + data2.error.message) : (data2.choices?.[0]?.message?.content || "Пустой ответ от ИИ.");
       } catch (e2) {
         box.textContent = "Не удалось: " + e2.message;
       }
