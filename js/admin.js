@@ -139,40 +139,55 @@
     $("drop-filled").style.display = "none";
   }
 
-  /* ---------- ИИ подбирает SEO ---------- */
+  /* ---------- ИИ: общий вызов сервера ---------- */
+  const AI_ENDPOINT = "https://rmrwlpoupzaodcsvhsof.supabase.co/functions/v1/ai-check";
+
+  const PROOF_PROMPT = `Ты корректор Secret Room Media — дерзкого русскоязычного медиа про iGaming. Финальная вычитка перед публикацией.
+
+ПРОВЕРЯЙ ТОЛЬКО: орфографию, пунктуацию, явные грамматические ошибки, оборванные фразы.
+НЕ ТРОГАЙ: сленг, мат, разговорный тон, юмор, провокации — это фирменный стиль.
+ФОРМАТ: если всё ок — «✓ Текст чистый, можно публиковать.» Иначе до 5 пунктов: «цитата» — [тип]: как поправить. НЕ переписывай текст целиком.`;
+
+
+  async function callAI(mode, text) {
+    const model = SRM_STORE.settings().model || "gpt-4o-mini";
+    const res = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, model, mode })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.result || "";
+  }
+
+  function applySeo(seo) {
+    if (seo.title) $("f-seo-title").value = seo.title;
+    if (seo.description) $("f-seo-desc").value = seo.description;
+    if (seo.keywords) $("f-seo-keys").value = Array.isArray(seo.keywords) ? seo.keywords.join(", ") : seo.keywords;
+    if (seo.tags) $("f-tags").value = Array.isArray(seo.tags) ? seo.tags.join(", ") : seo.tags;
+    updateSeoUI();
+  }
+
+  /* ---------- ИИ подбирает только SEO ---------- */
   async function seoAI() {
     const text = ($("f-title").value + "\n\n" + $("f-body").value).trim();
     if (text.length < 15) { toast("Сначала напиши заголовок и текст"); return; }
     const btn = $("seo-ai"); const old = btn.textContent;
     btn.textContent = "🤖 Думаю…"; btn.disabled = true;
     try {
-      const res = await fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode: "seo", model: SRM_STORE.settings().model || "gpt-4o-mini" })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      let seo;
-      try { seo = JSON.parse(data.result); } catch (_) { throw new Error("ИИ вернул не то, попробуй ещё раз"); }
-      if (seo.title) $("f-seo-title").value = seo.title;
-      if (seo.description) $("f-seo-desc").value = seo.description;
-      if (seo.keywords) $("f-seo-keys").value = Array.isArray(seo.keywords) ? seo.keywords.join(", ") : seo.keywords;
-      if (seo.tags && !$("f-tags").value.trim()) $("f-tags").value = Array.isArray(seo.tags) ? seo.tags.join(", ") : seo.tags;
-      updateSeoUI();
-      toast("SEO заполнено ИИ — проверь и поправь");
+      const raw = await callAI("seo", text);
+      const seo = JSON.parse(raw);
+      applySeo(seo);
+      toast("SEO-поля заполнены — проверь и поправь");
     } catch (e) {
-      toast("Не вышло: " + e.message);
+      toast("SEO не вышло: " + e.message);
     } finally {
       btn.textContent = old; btn.disabled = false;
     }
   }
 
-  /* ---------- ИИ-проверка ----------
-     Основной путь — серверная функция Supabase (ключ на сервере, работает из коробки).
-     Запасной — личный ключ OpenAI из «Настроек», если сервер недоступен. */
-  const AI_ENDPOINT = "https://rmrwlpoupzaodcsvhsof.supabase.co/functions/v1/ai-check";
-
+  /* ---------- ИИ: вычитка + SEO одной кнопкой ---------- */
   async function aiCheck() {
     const model = SRM_STORE.settings().model || "gpt-4o-mini";
     const box = $("ai-result");
@@ -180,37 +195,63 @@
     if (!text || text.length < 10) { toast("Сначала напиши текст"); return; }
 
     box.style.display = "block";
-    box.textContent = "🤖 Проверяю текст…";
+    box.textContent = "🤖 Вычитка + подбор SEO…";
     $("ai-check").disabled = true;
 
+    let proofText = "";
+    let seoOk = false;
+
     try {
-      const res = await fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, model })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      box.textContent = data.result || "Пустой ответ от ИИ.";
+      const [proofSettled, seoSettled] = await Promise.allSettled([
+        callAI("proof", text),
+        callAI("seo", text)
+      ]);
+
+      if (proofSettled.status === "fulfilled") {
+        proofText = proofSettled.value;
+      } else {
+        proofText = "⚠️ Вычитка: " + proofSettled.reason.message;
+      }
+
+      if (seoSettled.status === "fulfilled") {
+        try {
+          const seo = JSON.parse(seoSettled.value);
+          applySeo(seo);
+          seoOk = true;
+        } catch (_) {
+          proofText += "\n\n⚠️ SEO: ИИ вернул не JSON, нажми «Только SEO» ещё раз.";
+        }
+      } else {
+        proofText += "\n\n⚠️ SEO: " + seoSettled.reason.message;
+      }
+
+      box.textContent = proofText + (seoOk ? "\n\n✓ SEO-поля заполнены автоматически (title, description, ключи, теги) — проверь выше." : "");
+      if (seoOk) toast("Вычитка готова, SEO заполнено");
     } catch (e) {
+      // запасной путь — только вычитка через личный ключ
       const key = SRM_STORE.settings().openaiKey;
-      if (!key) { box.textContent = "Не удалось получить ответ ИИ: " + e.message + "\n\nМожно вставить свой OpenAI-ключ во вкладке «Настройки» как запасной вариант."; $("ai-check").disabled = false; return; }
+      if (!key) {
+        box.textContent = "Не удалось: " + e.message;
+        $("ai-check").disabled = false;
+        return;
+      }
       try {
         const res2 = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
           body: JSON.stringify({
-            model, temperature: 0.3,
+            model, temperature: 0.15,
             messages: [
-              { role: "system", content: "Ты редактор-корректор русскоязычного медиа про iGaming с дерзким, разговорным тоном. Проверь текст на орфографию, пунктуацию и стиль. Дай короткий список конкретных замечаний (максимум 6 пунктов), каждое — с указанием проблемного места и краткой рекомендацией. Сохраняй дерзкий авторский стиль. Если всё в порядке — так и напиши. НЕ переписывай весь текст целиком." },
+              { role: "system", content: PROOF_PROMPT },
               { role: "user", content: text }
             ]
           })
         });
         const data2 = await res2.json();
-        box.textContent = data2.error ? ("Ошибка OpenAI: " + data2.error.message) : (data2.choices?.[0]?.message?.content || "Пустой ответ от ИИ.");
+        box.textContent = (data2.error ? ("Ошибка: " + data2.error.message) : data2.choices?.[0]?.message?.content)
+          + "\n\n⚠️ SEO не заполнено — сервер недоступен. Нажми «Только SEO» или «Быстро без ИИ».";
       } catch (e2) {
-        box.textContent = "Не удалось обратиться к ИИ: " + e2.message;
+        box.textContent = "Не удалось: " + e2.message;
       }
     } finally {
       $("ai-check").disabled = false;

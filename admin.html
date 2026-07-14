@@ -171,7 +171,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
               <strong style="text-transform:uppercase">🔍 SEO-метки <span style="font-weight:500;font-size:12px;color:var(--gray)">чтобы находили в Google</span></strong>
               <span style="display:flex;gap:8px">
-                <button class="mini-btn" id="seo-ai" style="background:var(--lime)">🤖 Подобрать с ИИ</button>
+                <button class="mini-btn" id="seo-ai" style="background:var(--lime)">🤖 Только SEO</button>
                 <button class="mini-btn" id="seo-auto">Быстро без ИИ</button>
               </span>
             </div>
@@ -197,13 +197,16 @@
             </div>
           </div>
 
-          <!-- ИИ-проверка -->
+          <!-- ИИ-проверка + SEO -->
           <div class="ai-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-              <strong style="text-transform:uppercase">🤖 ИИ-проверка перед публикацией</strong>
-              <button class="btn" id="ai-check">Проверить текст ИИ</button>
+              <strong style="text-transform:uppercase">🤖 ИИ перед публикацией</strong>
+              <button class="btn" id="ai-check">Проверить всё ИИ</button>
             </div>
-            <p style="font-size:13px;margin-top:8px">Проверит орфографию, пунктуацию и стиль, подсветит слабые места и даст короткие рекомендации. Ключ OpenAI — во вкладке «Настройки».</p>
+            <p style="font-size:13px;margin-top:8px;line-height:1.5">
+              <strong>1.</strong> Вычитка — только орфография и пунктуация (сленг и мат не трогает, до 5 замечаний).<br>
+              <strong>2.</strong> SEO — автоматически заполнит поля выше: title, description, ключевые слова и теги по тексту поста.
+            </p>
             <div class="ai-result" id="ai-result"></div>
           </div>
         </div>
