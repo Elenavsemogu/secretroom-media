@@ -34,6 +34,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 3,
     accent: "pink",
     emoji: "🐘",
+    cover: "assets/covers/pink-elephant.png",
     tags: ["ASA", "Mr Vegas", "реклама слотов", "UK"],
     seo: {
       title: "Британский регулятор ASA против Mr Vegas: мультяшные маскоты и дети",
@@ -64,6 +65,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 4,
     accent: "lime",
     emoji: "🃏",
+    cover: "assets/covers/blackjack.png",
     tags: ["блэкджек", "Калифорния", "tribal casino", "кардрумы"],
     seo: {
       title: "Племенные казино Калифорнии против кардрумов: спор о блэкджеке",
@@ -95,6 +97,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 2,
     accent: "yellow",
     emoji: "💣",
+    cover: "assets/covers/bombs.png",
     tags: ["племенные казино", "ФБР", "угрозы", "США"],
     seo: {
       title: "Серия анонимных угроз племенным казино в США: реакция ФБР",
@@ -124,6 +127,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 3,
     accent: "blue",
     emoji: "📕",
+    cover: "assets/covers/nevada.png",
     tags: ["Невада", "Чёрная книга", "мафия", "история"],
     seo: {
       title: "Чёрная книга Невады: как казино навсегда закрывают двери",
@@ -221,6 +225,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 2,
     accent: "pink",
     emoji: "🎀",
+    cover: "assets/covers/custodex.png",
     tags: ["Custodex", "SBC", "розыгрыш", "конференция"],
     seo: { title: "", description: "", keywords: "" },
     body: [
@@ -243,6 +248,7 @@ window.SRM_DEFAULT_ARTICLES = [
     readTime: 2,
     accent: "lime",
     emoji: "🛡️",
+    cover: "assets/covers/proxyshard.png",
     tags: ["ProxyShard", "прокси", "антидетект", "сервис"],
     seo: { title: "", description: "", keywords: "" },
     body: [

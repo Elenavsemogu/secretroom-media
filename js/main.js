@@ -18,8 +18,7 @@
   if (lead) {
     hero.innerHTML = `
       <a class="hero-lead" href="article.html?id=${lead.id}">
-        <div class="cover" style="background:var(--${lead.accent})"></div>
-        <div class="cover-emoji">${lead.emoji}</div>
+        ${lead.cover ? `<img class="cover" src="${lead.cover}" alt="">` : `<div class="cover" style="background:var(--${lead.accent})"></div><div class="cover-emoji">${lead.emoji}</div>`}
         <div class="body">
           <span class="badge ${lead.source === 'tg' ? 'tg' : 'cat'}">${lead.source === 'tg' ? 'из Telegram' : lead.category}</span>
           <h1>${lead.title}</h1>
@@ -56,7 +55,7 @@
   strip.innerHTML = promos.map(a => `
     <a class="promo-banner ${colorMap[a.accent] || 'y'}" href="article.html?id=${a.id}">
       <span class="promo-tag">Реклама</span>
-      <span class="emoji">${a.emoji}</span>
+      ${a.cover ? `<img class="promo-thumb" src="${a.cover}" alt="" loading="lazy">` : `<span class="emoji">${a.emoji}</span>`}
       <div class="p-body">
         <h3>${a.title}</h3>
         <p>${a.dek}</p>

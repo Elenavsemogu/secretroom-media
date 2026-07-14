@@ -61,7 +61,7 @@
       </div>
     </div>
     <div class="article-cover" style="background:var(--${a.accent || 'yellow'})">
-      <span class="emoji">${a.emoji || "📰"}</span>
+      ${a.cover ? `<img src="${a.cover}" alt="${a.title}">` : `<span class="emoji">${a.emoji || "📰"}</span>`}
     </div>
     <div class="article-body">
       ${tgSource}

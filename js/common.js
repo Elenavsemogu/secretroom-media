@@ -36,8 +36,8 @@ function srmHeader(active) {
   </div></div>
   <header class="site-header"><div class="wrap">
     <a class="logo" href="index.html">
-      ${SRM_LOGO}
-      <span class="name">Secret Room<span>MEDIA</span></span>
+      <img class="logo-img" src="assets/logo.png" alt="Secret Room Media">
+      <span class="logo-media">Media</span>
     </a>
     <nav class="nav" id="nav">${nav}</nav>
     <div style="display:flex;align-items:center;gap:10px">
@@ -108,7 +108,7 @@ function srmCardHTML(a, wide) {
   <a class="card ${wide ? "wide" : ""}" href="article.html?id=${a.id}">
     <div class="thumb" style="background:var(--${a.accent || 'yellow'})">
       ${badge}
-      <span class="emoji">${a.emoji || "📰"}</span>
+      ${a.cover ? `<img class="thumb-img" src="${a.cover}" alt="" loading="lazy">` : `<span class="emoji">${a.emoji || "📰"}</span>`}
     </div>
     <div class="card-body">
       <h3>${a.title}</h3>

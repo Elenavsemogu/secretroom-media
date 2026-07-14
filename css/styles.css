@@ -84,8 +84,10 @@ h1, h2, h3, h4 {
 }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; gap: 20px; }
 
-.logo { display: flex; align-items: center; gap: 12px; }
+.logo { display: flex; align-items: center; gap: 10px; }
 .logo svg { width: 40px; height: 40px; flex: none; }
+.logo .logo-img { height: 42px; width: auto; flex: none; }
+.logo .logo-media { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 13px; letter-spacing: .04em; background: var(--ink); color: var(--paper); padding: 3px 8px; border-radius: 6px; align-self: center; }
 .logo .name { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; line-height: .85; font-size: 20px; letter-spacing: -0.01em; }
 .logo .name span { display: block; font-size: 10px; letter-spacing: .28em; font-weight: 700; color: var(--gray); }
 
@@ -120,7 +122,7 @@ h1, h2, h3, h4 {
   overflow: hidden; background: var(--ink); color: var(--paper);
   min-height: 460px; display: flex; flex-direction: column; justify-content: flex-end;
 }
-.hero-lead .cover { position: absolute; inset: 0; z-index: 0; }
+.hero-lead .cover { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero-lead .cover-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 220px; opacity: .9; }
 .hero-lead .body { position: relative; z-index: 2; padding: 30px; background: linear-gradient(0deg, rgba(27,27,27,.92) 30%, rgba(27,27,27,0)); }
 .hero-lead h1 { font-size: clamp(30px, 4.2vw, 52px); text-transform: uppercase; margin: 12px 0 10px; }
@@ -169,7 +171,8 @@ h1, h2, h3, h4 {
 .card:hover { transform: translate(-3px,-3px); box-shadow: var(--shadow-lg); }
 .card .thumb { height: 168px; position: relative; display: grid; place-items: center; border-bottom: 3px solid var(--ink); overflow: hidden; }
 .card .thumb .emoji { font-size: 82px; }
-.card .thumb .badge { position: absolute; top: 12px; left: 12px; }
+.card .thumb .thumb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.card .thumb .badge { position: absolute; top: 12px; left: 12px; z-index: 2; }
 .card .card-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .card h3 { font-size: 22px; text-transform: uppercase; }
 .card .dek { font-size: 14px; color: #33332f; flex: 1; }
@@ -205,6 +208,7 @@ h1, h2, h3, h4 {
 .promo-banner.l { background: var(--lime); }
 .promo-banner .promo-tag { position: absolute; top: 0; right: 0; background: var(--ink); color: var(--paper); font-size: 10px; font-weight: 800; letter-spacing: .12em; padding: 5px 12px; text-transform: uppercase; border-radius: 0 0 0 10px; }
 .promo-banner .emoji { font-size: 60px; flex: none; }
+.promo-banner .promo-thumb { width: 84px; height: 84px; object-fit: cover; border: 2px solid var(--ink); border-radius: 12px; flex: none; }
 .promo-banner .p-body { flex: 1; }
 .promo-banner .p-body h3 { font-size: 24px; text-transform: uppercase; margin-bottom: 6px; }
 .promo-banner .p-body p { font-size: 14px; max-width: 60ch; }
@@ -216,8 +220,9 @@ h1, h2, h3, h4 {
 .article-hero h1 { font-size: clamp(32px, 5vw, 64px); text-transform: uppercase; margin-bottom: 16px; }
 .article-hero .dek { font-size: 19px; max-width: 68ch; color: #33332f; }
 .article-meta { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--gray); margin: 20px 0; padding: 14px 0; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); flex-wrap: wrap; }
-.article-cover { height: 360px; border: 3px solid var(--ink); border-radius: var(--radius); display: grid; place-items: center; margin: 8px 0 30px; overflow: hidden; }
+.article-cover { height: 420px; border: 3px solid var(--ink); border-radius: var(--radius); display: grid; place-items: center; margin: 8px 0 30px; overflow: hidden; }
 .article-cover .emoji { font-size: 180px; }
+.article-cover img { width: 100%; height: 100%; object-fit: cover; }
 .article-body { max-width: 720px; margin: 0 auto; font-size: 18px; line-height: 1.7; }
 .article-body p { margin: 0 0 22px; }
 .article-body .tg-source { display: inline-flex; align-items: center; gap: 8px; background: var(--blue); color: #fff; font-weight: 700; font-size: 14px; padding: 10px 16px; border-radius: 999px; margin-bottom: 24px; }
