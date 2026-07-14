@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редакция — Secret Room Media</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231B1B1B'/%3E%3Ccircle cx='24' cy='20' r='9' fill='%23F5DA0F'/%3E%3Ccircle cx='24' cy='20' r='4' fill='%232E39F7'/%3E%3C/svg%3E">
+  <style>
+    .admin { max-width: 1000px; margin: 0 auto; padding: 24px; }
+    .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0 26px; }
+    .admin-tabs button { font-weight: 800; font-size: 14px; text-transform: uppercase; border: 2px solid var(--ink); background: var(--white); border-radius: 999px; padding: 9px 18px; cursor: pointer; }
+    .admin-tabs button.active { background: var(--yellow); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .composer { border: 3px solid var(--ink); border-radius: var(--radius); background: var(--white); overflow: hidden; }
+    .composer-top { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 3px solid var(--ink); background: var(--paper); }
+    .composer-top .ava { width: 42px; height: 42px; border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink); display: grid; place-items: center; font-size: 22px; }
+    .composer-body { padding: 20px; display: grid; gap: 16px; }
+    .field label { display: block; font-weight: 800; font-size: 13px; text-transform: uppercase; margin-bottom: 6px; }
+    .field .hint { font-weight: 500; font-size: 12px; color: var(--gray); text-transform: none; margin-left: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; font-family: var(--font-body); font-size: 15px; padding: 12px 14px;
+      border: 2px solid var(--ink); border-radius: 10px; background: #fff;
+    }
+    .field textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .counter { font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .counter.ok { color: #1a7f37; } .counter.warn { color: #b35900; } .counter.bad { color: #cc2b2b; }
+
+    .seo-box { border: 2px dashed var(--ink); border-radius: 12px; padding: 16px; background: var(--paper); }
+    .seo-box .serp { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+    .seo-box .serp .s-title { color: #1a0dab; font-size: 18px; line-height: 1.2; }
+    .seo-box .serp .s-url { color: #006621; font-size: 13px; }
+    .seo-box .serp .s-desc { color: #444; font-size: 13px; margin-top: 3px; }
+
+    .ai-box { border: 3px solid var(--ink); border-radius: 12px; padding: 16px; background: var(--lime); }
+    .ai-result { background: #fff; border: 2px solid var(--ink); border-radius: 10px; padding: 14px 16px; margin-top: 12px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; display: none; }
+    .composer-actions { display: flex; gap: 12px; padding: 18px 20px; border-top: 3px solid var(--ink); background: var(--paper); flex-wrap: wrap; }
+
+    .post-row { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .post-row .em { width: 46px; height: 46px; border-radius: 10px; display: grid; place-items: center; font-size: 24px; border: 2px solid var(--ink); flex: none; }
+    .post-row .info { flex: 1; }
+    .post-row .info h4 { font-family: var(--font-body); font-size: 16px; font-weight: 800; }
+    .post-row .info .m { font-size: 12px; color: var(--gray); }
+    .post-row .acts { display: flex; gap: 8px; }
+    .mini-btn { font-weight: 800; font-size: 12px; text-transform: uppercase; border: 2px solid var(--ink); background: #fff; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+    .mini-btn.del { background: #ffd9d9; }
+
+    .gate { max-width: 380px; margin: 80px auto; border: 3px solid var(--ink); border-radius: var(--radius); background: #fff; padding: 30px; text-align: center; }
+    .bar-track { background: #eee; border: 2px solid var(--ink); border-radius: 999px; height: 22px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--blue); }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 14px 22px; border-radius: 999px; font-weight: 700; opacity: 0; transition: .3s; z-index: 99; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="srm-header"></div>
+
+  <!-- Гейт входа -->
+  <div class="gate" id="gate">
+    <h2 style="font-size:26px;text-transform:uppercase;margin-bottom:14px">Вход в редакцию</h2>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:16px">Демо-пароль: <code>secret2026</code></p>
+    <input id="pass" type="password" placeholder="Пароль" style="width:100%;padding:12px;border:2px solid var(--ink);border-radius:10px;margin-bottom:12px">
+    <button class="btn yellow" style="width:100%;justify-content:center" id="login-btn">Войти</button>
+  </div>
+
+  <!-- Панель -->
+  <div class="admin" id="admin" style="display:none">
+    <div class="section-head"><h2>Редакция <span class="dot">/</span> Secret Room</h2><a href="index.html">← На сайт</a></div>
+
+    <div class="admin-tabs">
+      <button data-tab="create" class="active">✍️ Новый пост</button>
+      <button data-tab="posts">📋 Все посты</button>
+      <button data-tab="stats">📊 Статистика</button>
+      <button data-tab="settings">⚙️ Настройки</button>
+    </div>
+
+    <!-- СОЗДАТЬ -->
+    <div class="panel active" id="panel-create">
+      <div class="composer">
+        <div class="composer-top">
+          <div class="ava">🎩</div>
+          <div><strong>Новый материал</strong><div style="font-size:12px;color:var(--gray)">Заполни как обычный пост — остальное сделаем сами</div></div>
+        </div>
+        <div class="composer-body">
+          <input type="hidden" id="f-id">
+          <div class="field">
+            <label>Заголовок</label>
+            <input id="f-title" placeholder="Например: Розовый слон ворует бабки из детских копилок">
+          </div>
+          <div class="field">
+            <label>Подзаголовок / краткое описание <span class="hint">1–2 предложения, покажется в карточке</span></label>
+            <textarea id="f-dek" style="min-height:70px" placeholder="О чём материал в двух словах"></textarea>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Тип</label>
+              <select id="f-type">
+                <option value="main">Основная статья (полотно)</option>
+                <option value="tg">Пост из Telegram (сайдбар)</option>
+                <option value="promo">Реклама / посев (баннер)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Тематика</label>
+              <select id="f-cat"></select>
+            </div>
+            <div class="field">
+              <label>Источник</label>
+              <select id="f-source">
+                <option value="original">Своя статья</option>
+                <option value="tg">Из Telegram</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Эмодзи-обложка</label>
+              <input id="f-emoji" placeholder="🐘" maxlength="4">
+            </div>
+            <div class="field">
+              <label>Цвет акцента</label>
+              <select id="f-accent">
+                <option value="yellow">Жёлтый</option>
+                <option value="lime">Лайм</option>
+                <option value="pink">Розовый</option>
+                <option value="blue">Синий</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ссылка на ТГ / партнёра <span class="hint">необязательно</span></label>
+              <input id="f-link" placeholder="https://t.me/...">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Текст <span class="hint">разделяй абзацы пустой строкой</span></label>
+            <textarea id="f-body" placeholder="Пиши как в канале. Каждый новый абзац — с пустой строки."></textarea>
+          </div>
+
+          <div class="field">
+            <label>Теги <span class="hint">через запятую</span></label>
+            <input id="f-tags" placeholder="ASA, Mr Vegas, реклама слотов">
+          </div>
+
+          <!-- SEO -->
+          <div class="seo-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+              <strong style="text-transform:uppercase">🔍 SEO-метки <span style="font-weight:500;font-size:12px;color:var(--gray)">чтобы находили в Google</span></strong>
+              <button class="mini-btn" id="seo-auto">Заполнить автоматически</button>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label>SEO-заголовок (title) <span class="hint">до 60 символов</span></label>
+              <input id="f-seo-title" placeholder="Что увидит Google в заголовке">
+              <div class="counter" id="c-title"></div>
+            </div>
+            <div class="field">
+              <label>SEO-описание (description) <span class="hint">до 160 символов</span></label>
+              <textarea id="f-seo-desc" style="min-height:60px" placeholder="Короткое описание для поисковой выдачи"></textarea>
+              <div class="counter" id="c-desc"></div>
+            </div>
+            <div class="field">
+              <label>Ключевые слова <span class="hint">через запятую</span></label>
+              <input id="f-seo-keys" placeholder="Mr Vegas, реклама слотов, регулятор">
+            </div>
+            <div class="serp">
+              <div style="font-size:11px;color:#999;text-transform:uppercase;margin-bottom:6px">Как это будет выглядеть в Google</div>
+              <div class="s-title" id="serp-title">Заголовок появится здесь</div>
+              <div class="s-url">secretroom.media › статья</div>
+              <div class="s-desc" id="serp-desc">Описание появится здесь</div>
+            </div>
+          </div>
+
+          <!-- ИИ-проверка -->
+          <div class="ai-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+              <strong style="text-transform:uppercase">🤖 ИИ-проверка перед публикацией</strong>
+              <button class="btn" id="ai-check">Проверить текст ИИ</button>
+            </div>
+            <p style="font-size:13px;margin-top:8px">Проверит орфографию, пунктуацию и стиль, подсветит слабые места и даст короткие рекомендации. Ключ OpenAI — во вкладке «Настройки».</p>
+            <div class="ai-result" id="ai-result"></div>
+          </div>
+        </div>
+
+        <div class="composer-actions">
+          <button class="btn yellow" id="publish">🚀 Опубликовать</button>
+          <button class="btn ghost" id="reset-form">Очистить</button>
+          <span id="edit-note" style="align-self:center;font-weight:700;color:var(--blue);display:none">Режим редактирования</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ВСЕ ПОСТЫ -->
+    <div class="panel" id="panel-posts">
+      <p style="font-weight:700;margin-bottom:14px" id="posts-count"></p>
+      <div id="posts-list"></div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="panel" id="panel-stats">
+      <div class="stat-row">
+        <div class="stat y"><div class="num" id="st-total">0</div><div class="lbl">просмотров всего</div></div>
+        <div class="stat l"><div class="num" id="st-posts">0</div><div class="lbl">материалов</div></div>
+        <div class="stat p"><div class="num" id="st-avg">0</div><div class="lbl">в среднем на пост</div></div>
+        <div class="stat b"><div class="num" id="st-today">0</div><div class="lbl">просмотров сегодня</div></div>
+      </div>
+      <div class="section-head" style="margin-top:20px"><h2 style="font-size:26px">Топ материалов</h2></div>
+      <div id="stats-list"></div>
+      <button class="mini-btn del" id="reset-stats" style="margin-top:16px">Сбросить статистику</button>
+    </div>
+
+    <!-- НАСТРОЙКИ -->
+    <div class="panel" id="panel-settings">
+      <div class="composer"><div class="composer-body">
+        <div class="field">
+          <label>🔑 OpenAI API-ключ <span class="hint">для ИИ-проверки текста</span></label>
+          <input id="s-key" type="password" placeholder="sk-...">
+          <div style="font-size:12px;color:var(--gray);margin-top:6px">Хранится только в этом браузере (localStorage) и никуда не отправляется, кроме OpenAI. Ключ есть в коде hr-boost-bot и в панели аналитики канала МОСТ.</div>
+        </div>
+        <div class="field">
+          <label>Модель</label>
+          <select id="s-model">
+            <option value="gpt-4o-mini">gpt-4o-mini (быстро и дёшево)</option>
+            <option value="gpt-4o">gpt-4o (точнее)</option>
+          </select>
+        </div>
+        <div><button class="btn yellow" id="save-settings">Сохранить настройки</button></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

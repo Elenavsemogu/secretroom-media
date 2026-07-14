@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вакансии — Secret Room Media</title>
+  <meta name="description" content="Вакансии Secret Room Media: редакторы, авторы, SMM и дизайнеры для iGaming-медиа. Удалёнка, дерзкий тон, живые темы.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231B1B1B'/%3E%3Ccircle cx='24' cy='20' r='9' fill='%23F5DA0F'/%3E%3Ccircle cx='24' cy='20' r='4' fill='%232E39F7'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div id="srm-header"></div>
+
+  <main class="wrap">
+    <section class="section">
+      <div class="section-head"><h2>Вакансии <span class="dot">/</span> к нам в команду</h2></div>
+      <p style="max-width:640px;font-size:18px;margin-bottom:26px">Работаем удалённо, платим вовремя, не душним. Главное — уметь писать живо и не бояться острых тем.</p>
+      <div class="jobs" id="jobs"></div>
+    </section>
+
+    <section>
+      <div class="big-cta" style="background:var(--lime)">
+        <h2>Не нашёл свою вакансию?</h2>
+        <p style="max-width:52ch;margin:0 auto 20px;font-size:16px">Пиши всё равно — если ты крутой, мы придумаем, чем тебя занять.</p>
+        <a class="btn" href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Откликнуться в Telegram ↗</a>
+      </div>
+    </section>
+  </main>
+
+  <div id="srm-footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    srmMountChrome("careers");
+    const jobs = [
+      { t: "Редактор / автор", tags: ["Удалёнка", "iGaming", "Full-time"], d: "Писать новости и разборы про рынок. Нужен острый язык и насмотренность." },
+      { t: "SMM-менеджер", tags: ["Удалёнка", "Telegram", "Part-time"], d: "Вести канал, придумывать мемы, разгонять посевы." },
+      { t: "Дизайнер обложек", tags: ["Проектно", "Figma", "Мемы"], d: "Делать те самые дерзкие обложки постов в фирменном стиле." },
+      { t: "Sales / реклама", tags: ["Удалёнка", "%", "B2B"], d: "Продавать рекламу партнёрам рынка и вести их до результата." },
+    ];
+    document.getElementById("jobs").innerHTML = jobs.map(j => `
+      <div class="job">
+        <div>
+          <h3>${j.t}</h3>
+          <div class="j-meta">${j.tags.map(t => `<span class="badge ghost">${t}</span>`).join("")}</div>
+          <p style="margin-top:10px;max-width:60ch;color:#33332f">${j.d}</p>
+        </div>
+        <a class="btn yellow" href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Откликнуться →</a>
+      </div>`).join("");
+  </script>
+</body>
+</html>

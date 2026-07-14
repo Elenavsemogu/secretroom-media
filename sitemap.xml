@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://secretroom.media/index.html</loc><priority>1.0</priority></url>
+  <url><loc>https://secretroom.media/articles.html</loc><priority>0.9</priority></url>
+  <url><loc>https://secretroom.media/about.html</loc><priority>0.6</priority></url>
+  <url><loc>https://secretroom.media/careers.html</loc><priority>0.6</priority></url>
+  <!-- Скрытый SEO-раздел: не в меню, но открыт для индексации -->
+  <url><loc>https://secretroom.media/seo/kak-vybrat-affiliate-programmu-2026.html</loc><priority>0.8</priority></url>
+  <url><loc>https://secretroom.media/seo/glossary-igaming-terminov.html</loc><priority>0.8</priority></url>
+  <url><loc>https://secretroom.media/seo/konferencii-igaming-2026-kalendar.html</loc><priority>0.8</priority></url>
+</urlset>

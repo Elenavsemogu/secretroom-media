@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# SEO-раздел индексируется поисковиками, но не выведен в меню сайта
+Allow: /seo/
+
+Sitemap: https://secretroom.media/sitemap.xml
