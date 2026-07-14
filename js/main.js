@@ -49,16 +49,25 @@
       <div class="meta">${srmFmtDate(a.date)} · почитать здесь или в канале ↗</div>
     </a>`).join("") || `<div class="rail-item">Пока пусто</div>`;
 
-  // Промо-баннеры
-  const strip = document.getElementById("promo-strip");
-  const colorMap = { yellow: "y", pink: "p", lime: "l" };
-  strip.innerHTML = promos.map(a => `
-    <a class="promo-banner ${colorMap[a.accent] || 'y'}" href="article.html?id=${a.id}">
+  // Промо: один большой баннер + сетка мелких
+  const colorMap = { yellow: "y", pink: "p", lime: "l", blue: "b" };
+  const promoHero = promos[0];
+  const promoRest = promos.slice(1);
+
+  document.getElementById("promo-hero").innerHTML = promoHero ? `
+    <a class="promo-banner ${colorMap[promoHero.accent] || 'y'}" href="article.html?id=${promoHero.id}">
       <span class="promo-tag">Реклама</span>
-      ${a.cover ? `<img class="promo-thumb" src="${a.cover}" alt="" loading="lazy">` : `<span class="emoji">${a.emoji}</span>`}
+      ${promoHero.cover ? `<img class="promo-thumb" src="${promoHero.cover}" alt="" loading="lazy">` : `<span class="emoji">${promoHero.emoji}</span>`}
       <div class="p-body">
-        <h3>${a.title}</h3>
-        <p>${a.dek}</p>
+        <h3>${promoHero.title}</h3>
+        <p>${promoHero.dek}</p>
       </div>
+    </a>` : "";
+
+  document.getElementById("promo-small").innerHTML = promoRest.map(a => `
+    <a class="promo-small ${colorMap[a.accent] || 'y'}" href="article.html?id=${a.id}">
+      <span class="promo-tag">Реклама</span>
+      ${a.cover ? `<img class="promo-small-thumb" src="${a.cover}" alt="" loading="lazy">` : `<span class="ps-emoji">${a.emoji}</span>`}
+      <div class="ps-body"><h4>${a.title}</h4></div>
     </a>`).join("");
 })();
