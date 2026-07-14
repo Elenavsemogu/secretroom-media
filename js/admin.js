@@ -95,37 +95,50 @@
     toast("SEO-поля заполнены — проверь и поправь");
   }
 
-  /* ---------- ИИ-проверка (OpenAI) ---------- */
+  /* ---------- ИИ-проверка ----------
+     Основной путь — серверная функция Supabase (ключ на сервере, работает из коробки).
+     Запасной — личный ключ OpenAI из «Настроек», если сервер недоступен. */
+  const AI_ENDPOINT = "https://rmrwlpoupzaodcsvhsof.supabase.co/functions/v1/ai-check";
+
   async function aiCheck() {
-    const key = SRM_STORE.settings().openaiKey;
     const model = SRM_STORE.settings().model || "gpt-4o-mini";
     const box = $("ai-result");
     const text = ($("f-title").value + "\n\n" + $("f-body").value).trim();
     if (!text || text.length < 10) { toast("Сначала напиши текст"); return; }
-    if (!key) { box.style.display = "block"; box.textContent = "⚠️ Не задан OpenAI-ключ. Вставь его во вкладке «Настройки»."; return; }
 
     box.style.display = "block";
     box.textContent = "🤖 Проверяю текст…";
     $("ai-check").disabled = true;
 
     try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      const res = await fetch(AI_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-        body: JSON.stringify({
-          model,
-          temperature: 0.3,
-          messages: [
-            { role: "system", content: "Ты редактор-корректор русскоязычного медиа про iGaming с дерзким, разговорным тоном. Проверь текст на орфографию, пунктуацию и стиль. Дай короткий список конкретных замечаний (максимум 6 пунктов), каждое — с указанием проблемного места и краткой рекомендацией. Сохраняй дерзкий авторский стиль, не приглаживай его. Если всё в порядке — так и напиши. НЕ переписывай весь текст целиком." },
-            { role: "user", content: text }
-          ]
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, model })
       });
       const data = await res.json();
-      if (data.error) { box.textContent = "Ошибка OpenAI: " + data.error.message; return; }
-      box.textContent = data.choices?.[0]?.message?.content || "Пустой ответ от ИИ.";
+      if (data.error) throw new Error(data.error);
+      box.textContent = data.result || "Пустой ответ от ИИ.";
     } catch (e) {
-      box.textContent = "Не удалось обратиться к OpenAI: " + e.message + "\n\n(Проверь ключ и интернет. В демо запрос идёт напрямую из браузера.)";
+      const key = SRM_STORE.settings().openaiKey;
+      if (!key) { box.textContent = "Не удалось получить ответ ИИ: " + e.message + "\n\nМожно вставить свой OpenAI-ключ во вкладке «Настройки» как запасной вариант."; $("ai-check").disabled = false; return; }
+      try {
+        const res2 = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+          body: JSON.stringify({
+            model, temperature: 0.3,
+            messages: [
+              { role: "system", content: "Ты редактор-корректор русскоязычного медиа про iGaming с дерзким, разговорным тоном. Проверь текст на орфографию, пунктуацию и стиль. Дай короткий список конкретных замечаний (максимум 6 пунктов), каждое — с указанием проблемного места и краткой рекомендацией. Сохраняй дерзкий авторский стиль. Если всё в порядке — так и напиши. НЕ переписывай весь текст целиком." },
+              { role: "user", content: text }
+            ]
+          })
+        });
+        const data2 = await res2.json();
+        box.textContent = data2.error ? ("Ошибка OpenAI: " + data2.error.message) : (data2.choices?.[0]?.message?.content || "Пустой ответ от ИИ.");
+      } catch (e2) {
+        box.textContent = "Не удалось обратиться к ИИ: " + e2.message;
+      }
     } finally {
       $("ai-check").disabled = false;
     }
