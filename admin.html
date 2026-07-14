@@ -38,6 +38,10 @@
     .seo-box .serp .s-url { color: #006621; font-size: 13px; }
     .seo-box .serp .s-desc { color: #444; font-size: 13px; margin-top: 3px; }
 
+    .uploader { border: 2px dashed var(--ink); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #fff; transition: .15s; }
+    .uploader:hover { background: var(--paper); }
+    .uploader.drag { background: var(--lime); }
+    .cover-preview { max-width: 260px; width: 100%; border: 2px solid var(--ink); border-radius: 10px; }
     .ai-box { border: 3px solid var(--ink); border-radius: 12px; padding: 16px; background: var(--lime); }
     .ai-result { background: #fff; border: 2px solid var(--ink); border-radius: 10px; padding: 14px 16px; margin-top: 12px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; display: none; }
     .composer-actions { display: flex; gap: 12px; padding: 18px 20px; border-top: 3px solid var(--ink); background: var(--paper); flex-wrap: wrap; }
@@ -120,13 +124,25 @@
             </div>
           </div>
 
-          <div class="row-3">
-            <div class="field">
-              <label>Эмодзи-обложка</label>
-              <input id="f-emoji" placeholder="🐘" maxlength="4">
+          <div class="field">
+            <label>Обложка — картинка <span class="hint">jpg/png, авто-сжатие до 1200px</span></label>
+            <div class="uploader" id="dropzone">
+              <input id="f-image" type="file" accept="image/*" hidden>
+              <input type="hidden" id="f-cover">
+              <div id="drop-empty">
+                <div style="font-size:34px">🖼️</div>
+                <div style="font-weight:800;margin-top:6px">Нажми, чтобы выбрать картинку</div>
+                <div style="font-size:12px;color:var(--gray)">или перетащи файл сюда</div>
+              </div>
+              <div id="drop-filled" style="display:none">
+                <img id="f-image-preview" class="cover-preview" alt="">
+                <button type="button" class="mini-btn del" id="drop-remove" style="margin-top:10px">Убрать картинку</button>
+              </div>
             </div>
+          </div>
+          <div class="row">
             <div class="field">
-              <label>Цвет акцента</label>
+              <label>Цвет акцента <span class="hint">фон, если без картинки</span></label>
               <select id="f-accent">
                 <option value="yellow">Жёлтый</option>
                 <option value="lime">Лайм</option>
@@ -154,7 +170,10 @@
           <div class="seo-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
               <strong style="text-transform:uppercase">🔍 SEO-метки <span style="font-weight:500;font-size:12px;color:var(--gray)">чтобы находили в Google</span></strong>
-              <button class="mini-btn" id="seo-auto">Заполнить автоматически</button>
+              <span style="display:flex;gap:8px">
+                <button class="mini-btn" id="seo-ai" style="background:var(--lime)">🤖 Подобрать с ИИ</button>
+                <button class="mini-btn" id="seo-auto">Быстро без ИИ</button>
+              </span>
             </div>
             <div class="field" style="margin-top:12px">
               <label>SEO-заголовок (title) <span class="hint">до 60 символов</span></label>

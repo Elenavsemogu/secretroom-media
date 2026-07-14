@@ -50,12 +50,16 @@
       toast("Настройки сохранены");
     });
 
+    // загрузка картинки
+    setupImage();
+
     // счётчики SEO + превью SERP
     ["f-seo-title", "f-seo-desc", "f-title", "f-dek"].forEach(id => $(id).addEventListener("input", updateSeoUI));
     $("seo-auto").addEventListener("click", autoSeo);
+    $("seo-ai").addEventListener("click", seoAI);
     updateSeoUI();
 
-    // ИИ
+    // ИИ-проверка текста
     $("ai-check").addEventListener("click", aiCheck);
 
     // публикация
@@ -93,6 +97,75 @@
     $("f-seo-keys").value = [...new Set(words)].join(", ");
     updateSeoUI();
     toast("SEO-поля заполнены — проверь и поправь");
+  }
+
+  /* ---------- загрузка и сжатие картинки ---------- */
+  function setupImage() {
+    const dz = $("dropzone"), input = $("f-image");
+    dz.addEventListener("click", (e) => { if (e.target.id !== "drop-remove") input.click(); });
+    input.addEventListener("change", () => { if (input.files[0]) handleImage(input.files[0]); });
+    $("drop-remove").addEventListener("click", (e) => { e.stopPropagation(); clearImage(); });
+    ["dragover", "dragenter"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("drag"); }));
+    ["dragleave", "drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("drag"); }));
+    dz.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f && f.type.startsWith("image/")) handleImage(f); });
+  }
+  function handleImage(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        // сжимаем до макс. 1200px, чтобы влезало в localStorage
+        const max = 1200;
+        let { width: w, height: h } = img;
+        if (w > max || h > max) { const k = Math.min(max / w, max / h); w = Math.round(w * k); h = Math.round(h * k); }
+        const c = document.createElement("canvas"); c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = c.toDataURL("image/jpeg", 0.82);
+        setImage(dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function setImage(dataUrl) {
+    $("f-cover").value = dataUrl;
+    $("f-image-preview").src = dataUrl;
+    $("drop-empty").style.display = "none";
+    $("drop-filled").style.display = "block";
+  }
+  function clearImage() {
+    $("f-cover").value = ""; $("f-image").value = "";
+    $("drop-empty").style.display = "block";
+    $("drop-filled").style.display = "none";
+  }
+
+  /* ---------- ИИ подбирает SEO ---------- */
+  async function seoAI() {
+    const text = ($("f-title").value + "\n\n" + $("f-body").value).trim();
+    if (text.length < 15) { toast("Сначала напиши заголовок и текст"); return; }
+    const btn = $("seo-ai"); const old = btn.textContent;
+    btn.textContent = "🤖 Думаю…"; btn.disabled = true;
+    try {
+      const res = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, mode: "seo", model: SRM_STORE.settings().model || "gpt-4o-mini" })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      let seo;
+      try { seo = JSON.parse(data.result); } catch (_) { throw new Error("ИИ вернул не то, попробуй ещё раз"); }
+      if (seo.title) $("f-seo-title").value = seo.title;
+      if (seo.description) $("f-seo-desc").value = seo.description;
+      if (seo.keywords) $("f-seo-keys").value = Array.isArray(seo.keywords) ? seo.keywords.join(", ") : seo.keywords;
+      if (seo.tags && !$("f-tags").value.trim()) $("f-tags").value = Array.isArray(seo.tags) ? seo.tags.join(", ") : seo.tags;
+      updateSeoUI();
+      toast("SEO заполнено ИИ — проверь и поправь");
+    } catch (e) {
+      toast("Не вышло: " + e.message);
+    } finally {
+      btn.textContent = old; btn.disabled = false;
+    }
   }
 
   /* ---------- ИИ-проверка ----------
@@ -165,7 +238,8 @@
       title,
       dek: $("f-dek").value.trim(),
       category: $("f-cat").value,
-      emoji: $("f-emoji").value.trim() || "📰",
+      emoji: "📰",
+      cover: $("f-cover").value || "",
       accent: $("f-accent").value,
       tgLink: $("f-link").value.trim(),
       partnerLink: $("f-type").value === "promo" ? $("f-link").value.trim() : "",
@@ -187,8 +261,9 @@
     renderPosts();
   }
   function resetForm() {
-    ["f-id","f-title","f-dek","f-emoji","f-link","f-body","f-tags","f-seo-title","f-seo-desc","f-seo-keys"].forEach(id => $(id).value = "");
+    ["f-id","f-title","f-dek","f-link","f-body","f-tags","f-seo-title","f-seo-desc","f-seo-keys"].forEach(id => $(id).value = "");
     $("f-type").value = "main"; $("f-source").value = "original"; $("f-accent").value = "yellow";
+    clearImage();
     $("ai-result").style.display = "none"; $("edit-note").style.display = "none";
     updateSeoUI();
   }
@@ -197,7 +272,8 @@
     if (!a) return;
     $("f-id").value = a.id; $("f-title").value = a.title; $("f-dek").value = a.dek || "";
     $("f-type").value = a.type; $("f-source").value = a.source || "original";
-    $("f-cat").value = a.category; $("f-emoji").value = a.emoji || ""; $("f-accent").value = a.accent || "yellow";
+    $("f-cat").value = a.category; $("f-accent").value = a.accent || "yellow";
+    if (a.cover) setImage(a.cover); else clearImage();
     $("f-link").value = a.tgLink || a.partnerLink || "";
     $("f-body").value = (a.body || []).filter(b => b.type === "p").map(b => b.text).join("\n\n");
     $("f-tags").value = (a.tags || []).join(", ");
