@@ -84,6 +84,9 @@
     .editor-area .inline-promo .promo-tag { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 3px 10px; border-radius: 999px; }
     .editor-area .inline-promo h4 { font-size: 18px; text-transform: uppercase; margin: 10px 0 6px; }
     .editor-hint { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.5; }
+    .editor-ai-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-top: 2px dashed var(--ink); background: var(--lime); }
+    .editor-ai-bar .mini-btn { background: #fff; }
+    .editor-ai-bar .hint-inline { font-size: 12px; color: #333; line-height: 1.4; }
 
     .preview-overlay { position: fixed; inset: 0; background: rgba(27,27,27,.55); z-index: 200; display: grid; place-items: start center; padding: 24px 16px; overflow-y: auto; }
     .preview-overlay[hidden] { display: none; }
@@ -212,6 +215,10 @@
                 <button type="button" data-cmd="redo" title="Вернуть (Ctrl+Shift+Z)">↪ Вернуть</button>
               </div>
               <div class="editor-area" id="editor-area" contenteditable="true"><p><br></p></div>
+              <div class="editor-ai-bar">
+                <button type="button" class="mini-btn" id="ai-format">🤖 Упорядочить с ИИ</button>
+                <span class="hint-inline">расставит абзацы, H2/H3 и цитаты по смыслу — формулировки и тон не трогает</span>
+              </div>
             </div>
             <div class="editor-hint">H1 — поле «Заголовок» сверху. В тексте: H2/H3, цитаты, картинки, ссылки, рекламный блок. Выдели фрагмент → жми кнопку. Отмена — ↩ или Ctrl+Z.</div>
           </div>

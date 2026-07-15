@@ -63,6 +63,7 @@
 
     // ИИ-проверка на ошибки
     $("ai-check").addEventListener("click", aiCheck);
+    $("ai-format").addEventListener("click", aiFormat);
 
     // публикация
     $("publish").addEventListener("click", publish);
@@ -142,6 +143,48 @@
 НЕ ТРОГАЙ: сленг, мат, разговорный тон, юмор, провокации — это фирменный стиль.
 ФОРМАТ: если всё ок — «✓ Текст чистый, можно публиковать.» Иначе до 5 пунктов: «цитата» — [тип]: как поправить. НЕ переписывай текст целиком.`;
 
+  const FORMAT_PROMPT = `Ты верстальщик Secret Room Media — дерзкого русскоязычного медиа про iGaming.
+
+Получишь заголовок статьи (он уже H1 на сайте — НЕ включай h1 в ответ) и сырой текст.
+
+ЗАДАЧА — разметить текст в HTML для публикации:
+— разбей на логичные абзацы <p>
+— добавь <h2> для крупных смысловых блоков, <h3> для подразделов внутри
+— 1–2 яркие ключевые фразы можно выделить <blockquote class="art-quote"><p>...</p></blockquote>
+— перечисления оформи <ul><li> или <ol><li>
+— URL из текста преврати в <a href="..." target="_blank" rel="noopener">текст</a>
+— поправь только явные опечатки; сленг, мат, разговорный тон, юмор НЕ трогай и НЕ «улучшай»
+
+ЗАПРЕЩЕНО: h1, img, figure, div, script, markdown, пояснения, обёртки \`\`\`
+
+Разрешённые теги: p, h2, h3, blockquote, ul, ol, li, strong, em, a, br
+
+Верни ТОЛЬКО HTML-фрагмент тела статьи.`;
+
+  function stripAiHtml(raw) {
+    return String(raw || "")
+      .replace(/^```(?:html)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+  }
+
+  async function openAiDirect(system, user, model) {
+    const key = SRM_STORE.settings().openaiKey;
+    if (!key) throw new Error("нет ключа");
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+      body: JSON.stringify({
+        model: model || "gpt-4o-mini",
+        temperature: 0.25,
+        messages: [{ role: "system", content: system }, { role: "user", content: user }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || "";
+  }
+
 
   async function callAI(mode, text) {
     const model = SRM_STORE.settings().model || "gpt-4o-mini";
@@ -182,6 +225,44 @@
       toast("SEO не вышло: " + e.message);
     } finally {
       btn.textContent = old; btn.disabled = false;
+    }
+  }
+
+  /* ---------- ИИ: упорядочить текст в верстаке ---------- */
+  async function aiFormat() {
+    const source = SRM_EDITOR.getSourceText();
+    const title = $("f-title").value.trim();
+    if (source.length < 40) { toast("Напиши хотя бы пару абзацев текста"); return; }
+
+    const html = SRM_EDITOR.getHtml();
+    if (/art-figure|inline-promo/.test(html)) {
+      if (!confirm("В тексте есть картинки или рекламные блоки. ИИ перестроит только текст — их нужно будет вставить заново. Продолжить?")) return;
+    }
+
+    const btn = $("ai-format");
+    const old = btn.textContent;
+    btn.textContent = "🤖 Верстаю…";
+    btn.disabled = true;
+
+    const payload = `Заголовок статьи (H1, не включай в HTML):\n${title || "Без заголовка"}\n\n---\n\nТекст:\n${source}`;
+    const model = SRM_STORE.settings().model || "gpt-4o-mini";
+
+    try {
+      let raw;
+      try {
+        raw = await callAI("format", payload);
+      } catch (e) {
+        raw = await openAiDirect(FORMAT_PROMPT, payload, model);
+      }
+      const cleaned = stripAiHtml(raw);
+      if (!cleaned || cleaned.length < 10) throw new Error("пустой ответ");
+      SRM_EDITOR.setHtml(cleaned);
+      toast("Текст упорядочен — проверь и поправь при необходимости");
+    } catch (e) {
+      toast("Не вышло: " + e.message);
+    } finally {
+      btn.textContent = old;
+      btn.disabled = false;
     }
   }
 

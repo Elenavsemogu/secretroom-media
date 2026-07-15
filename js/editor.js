@@ -175,9 +175,10 @@ window.SRM_EDITOR = (function () {
   }
 
   function getHtml() { return area ? sanitize(area.innerHTML) : ""; }
-  function setHtml(html) { if (area) area.innerHTML = html || "<p><br></p>"; }
+  function setHtml(html) { if (area) area.innerHTML = sanitize(html) || "<p><br></p>"; }
   function getPlainText() { return area ? area.innerText.replace(/\s+/g, " ").trim() : ""; }
+  function getSourceText() { return area ? area.innerText.trim() : ""; }
   function clear() { setHtml("<p><br></p>"); }
 
-  return { init, getHtml, setHtml, getPlainText, clear };
+  return { init, getHtml, setHtml, getPlainText, getSourceText, clear };
 })();
