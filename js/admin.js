@@ -53,6 +53,9 @@
     // загрузка картинки
     setupImage();
 
+    // верстак
+    SRM_EDITOR.init();
+
     // счётчики SEO + превью SERP
     ["f-seo-title", "f-seo-desc", "f-title", "f-dek"].forEach(id => $(id).addEventListener("input", updateSeoUI));
     $("seo-ai").addEventListener("click", seoAI);
@@ -63,6 +66,10 @@
 
     // публикация
     $("publish").addEventListener("click", publish);
+    $("preview-btn").addEventListener("click", showPreview);
+    $("preview-close").addEventListener("click", closePreview);
+    $("preview-overlay").addEventListener("click", e => { if (e.target === $("preview-overlay")) closePreview(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("preview-overlay").hidden) closePreview(); });
     $("reset-form").addEventListener("click", resetForm);
     $("reset-stats").addEventListener("click", () => {
       if (confirm("Сбросить всю статистику просмотров?")) {
@@ -157,8 +164,12 @@
   }
 
   /* ---------- ИИ подбирает только SEO ---------- */
+  function articleText() {
+    return ($("f-title").value + "\n\n" + SRM_EDITOR.getPlainText()).trim();
+  }
+
   async function seoAI() {
-    const text = ($("f-title").value + "\n\n" + $("f-body").value).trim();
+    const text = articleText();
     if (text.length < 15) { toast("Сначала напиши заголовок и текст"); return; }
     const btn = $("seo-ai"); const old = btn.textContent;
     btn.textContent = "🤖 Думаю…"; btn.disabled = true;
@@ -178,7 +189,7 @@
   async function aiCheck() {
     const model = SRM_STORE.settings().model || "gpt-4o-mini";
     const box = $("ai-result");
-    const text = ($("f-title").value + "\n\n" + $("f-body").value).trim();
+    const text = articleText();
     if (!text || text.length < 10) { toast("Сначала напиши текст"); return; }
 
     box.style.display = "block";
@@ -217,6 +228,78 @@
     }
   }
 
+  /* ---------- предпросмотр ---------- */
+  function draftArticle() {
+    const bodyText = SRM_EDITOR.getPlainText();
+    return {
+      title: $("f-title").value.trim() || "Заголовок статьи",
+      dek: $("f-dek").value.trim(),
+      type: $("f-type").value,
+      source: $("f-source").value,
+      category: $("f-cat").value,
+      accent: $("f-accent").value,
+      cover: $("f-cover").value,
+      emoji: "📰",
+      tgLink: $("f-link").value.trim(),
+      partnerLink: $("f-type").value === "promo" ? $("f-link").value.trim() : "",
+      date: new Date().toISOString().slice(0, 10),
+      author: $("f-type").value === "promo" ? "Реклама" : "Secret Room",
+      readTime: Math.max(1, Math.round((bodyText.split(/\s+/).length || 1) / 180)),
+      tags: $("f-tags").value.split(",").map(t => t.trim()).filter(Boolean),
+      bodyHtml: SRM_EDITOR.getHtml()
+    };
+  }
+
+  function articlePreviewHTML(a) {
+    const isPromo = a.type === "promo";
+    const kicker = isPromo
+      ? `<span class="badge promo">Реклама</span><span class="badge cat">${a.category}</span>`
+      : (a.source === "tg"
+          ? `<span class="badge tg">из Telegram</span><span class="badge cat">${a.category}</span>`
+          : `<span class="badge cat">${a.category}</span>`);
+    const tgSource = a.source === "tg"
+      ? `<a class="tg-source" href="${a.tgLink || '#'}" target="_blank" rel="noopener">${SRM_TG_ICO} Оригинал в Telegram-канале — почитать можно и здесь ↗</a>`
+      : "";
+    const bodyHTML = a.bodyHtml || "<p><em>Текст статьи пока пустой</em></p>";
+    const partnerCTA = (isPromo && a.partnerLink)
+      ? `<div class="inline-promo" style="background:var(--${a.accent || 'yellow'})"><span class="promo-tag">Партнёрская ссылка</span><h4>Перейти к партнёру</h4><p style="margin-top:10px"><a class="btn" href="${a.partnerLink}" target="_blank" rel="noopener">Открыть ↗</a></p></div>`
+      : "";
+    return `
+      <div class="article-hero">
+        <div class="kicker">${kicker}</div>
+        <h1>${a.title}</h1>
+        <p class="dek">${a.dek || ""}</p>
+        <div class="article-meta">
+          <span><strong>${a.author || "Secret Room"}</strong></span>·
+          <span>${srmFmtDate(a.date)}</span>·
+          <span>${a.readTime || 2} мин чтения</span>·
+          <span>👁 предпросмотр</span>
+        </div>
+      </div>
+      <div class="article-cover" style="background:var(--${a.accent || 'yellow'})">
+        ${a.cover ? `<img src="${a.cover}" alt="${a.title}">` : `<span class="emoji">${a.emoji || "📰"}</span>`}
+      </div>
+      <div class="article-body">
+        ${tgSource}
+        ${bodyHTML}
+        ${partnerCTA}
+        <div class="tags">${(a.tags || []).map(t => `<span class="tag">#${t}</span>`).join("")}</div>
+      </div>`;
+  }
+
+  function showPreview() {
+    const a = draftArticle();
+    if (!SRM_EDITOR.getPlainText() && !a.dek) { toast("Сначала напиши заголовок или текст"); return; }
+    $("preview-body").innerHTML = articlePreviewHTML(a);
+    $("preview-overlay").hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closePreview() {
+    $("preview-overlay").hidden = true;
+    document.body.style.overflow = "";
+  }
+
   /* ---------- публикация ---------- */
   function slugify(s) {
     const map = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya" };
@@ -226,7 +309,9 @@
   function publish() {
     const title = $("f-title").value.trim();
     if (!title) { toast("Впиши заголовок"); return; }
-    const bodyText = $("f-body").value.trim();
+    const bodyHtml = SRM_EDITOR.getHtml();
+    const bodyText = SRM_EDITOR.getPlainText();
+    if (!bodyText) { toast("Напиши текст статьи"); return; }
     const body = bodyText.split(/\n\s*\n/).map(p => ({ type: "p", text: p.trim() })).filter(b => b.text);
 
     const id = $("f-id").value || ("u-" + Date.now());
@@ -253,6 +338,7 @@
         keywords: $("f-seo-keys").value.trim()
       },
       body,
+      bodyHtml: bodyHtml || "",
       featured: false
     };
     SRM_STORE.upsertArticle(article);
@@ -261,8 +347,9 @@
     renderPosts();
   }
   function resetForm() {
-    ["f-id","f-title","f-dek","f-link","f-body","f-tags","f-seo-title","f-seo-desc","f-seo-keys"].forEach(id => $(id).value = "");
+    ["f-id","f-title","f-dek","f-link","f-tags","f-seo-title","f-seo-desc","f-seo-keys"].forEach(id => $(id).value = "");
     $("f-type").value = "main"; $("f-source").value = "original"; $("f-accent").value = "yellow";
+    SRM_EDITOR.clear();
     clearImage();
     $("ai-result").style.display = "none"; $("edit-note").style.display = "none";
     updateSeoUI();
@@ -275,7 +362,16 @@
     $("f-cat").value = a.category; $("f-accent").value = a.accent || "yellow";
     if (a.cover) setImage(a.cover); else clearImage();
     $("f-link").value = a.tgLink || a.partnerLink || "";
-    $("f-body").value = (a.body || []).filter(b => b.type === "p").map(b => b.text).join("\n\n");
+    if (a.bodyHtml) {
+      SRM_EDITOR.setHtml(a.bodyHtml);
+    } else {
+      const legacy = (a.body || []).filter(b => b.type === "p").map(b => {
+        const p = document.createElement("p");
+        p.textContent = b.text;
+        return p.outerHTML;
+      }).join("");
+      SRM_EDITOR.setHtml(legacy || "<p><br></p>");
+    }
     $("f-tags").value = (a.tags || []).join(", ");
     $("f-seo-title").value = a.seo?.title || ""; $("f-seo-desc").value = a.seo?.description || ""; $("f-seo-keys").value = a.seo?.keywords || "";
     $("edit-note").style.display = "inline"; updateSeoUI();

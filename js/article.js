@@ -32,7 +32,7 @@
     ? `<a class="tg-source" href="${a.tgLink || '#'}" target="_blank" rel="noopener">${SRM_TG_ICO} Оригинал в Telegram-канале — почитать можно и здесь ↗</a>`
     : "";
 
-  const bodyHTML = (a.body || []).map(block => {
+  const legacyBody = (a.body || []).map(block => {
     if (block.type === "inline-promo") {
       return `<div class="inline-promo" style="background:var(--${block.accent || 'lime'})">
         <span class="promo-tag">${block.tag || 'Реклама'}</span>
@@ -43,6 +43,8 @@
     }
     return `<p>${block.text}</p>`;
   }).join("");
+
+  const bodyHTML = a.bodyHtml || legacyBody;
 
   const partnerCTA = (isPromo && a.partnerLink)
     ? `<div class="inline-promo" style="background:var(--${a.accent || 'yellow'})"><span class="promo-tag">Партнёрская ссылка</span><h4>Перейти к партнёру</h4><p style="margin-top:10px"><a class="btn" href="${a.partnerLink}" target="_blank" rel="noopener">Открыть ↗</a></p></div>`

@@ -60,6 +60,40 @@
     .bar-fill { height: 100%; background: var(--blue); }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 14px 22px; border-radius: 999px; font-weight: 700; opacity: 0; transition: .3s; z-index: 99; }
     .toast.show { opacity: 1; }
+
+    .editor-wrap { border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: #fff; }
+    .editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-bottom: 2px solid var(--ink); background: var(--paper); }
+    .editor-toolbar button {
+      font-weight: 800; font-size: 12px; text-transform: uppercase; border: 2px solid var(--ink);
+      background: #fff; border-radius: 8px; padding: 6px 10px; cursor: pointer; line-height: 1;
+    }
+    .editor-toolbar button:hover { background: var(--yellow); }
+    .editor-toolbar .sep { width: 1px; background: #ccc; margin: 0 4px; align-self: stretch; }
+    .editor-area {
+      min-height: 280px; padding: 18px 20px; font-size: 16px; line-height: 1.65; outline: none;
+    }
+    .editor-area:empty::before { content: "Пиши текст. Выделяй фрагменты и жми кнопки сверху — заголовки, ссылки, картинки."; color: #aaa; }
+    .editor-area h2 { font-family: var(--font-display); font-size: 28px; font-weight: 900; text-transform: uppercase; margin: 28px 0 12px; line-height: 1.15; }
+    .editor-area h3 { font-family: var(--font-display); font-size: 20px; font-weight: 900; margin: 22px 0 10px; }
+    .editor-area .art-figure { margin: 24px 0; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--paper); }
+    .editor-area .art-figure img { display: block; width: 100%; height: auto; }
+    .editor-area .art-figure figcaption { padding: 10px 14px; font-size: 13px; color: var(--gray); font-weight: 600; border-top: 2px solid var(--ink); }
+    .editor-area a { color: var(--blue); text-decoration: underline; }
+    .editor-area blockquote.art-quote { margin: 20px 0; padding: 14px 18px; border-left: 4px solid var(--blue); background: var(--paper); font-style: italic; }
+    .editor-area .inline-promo { border: 2px solid var(--ink); border-radius: 12px; padding: 14px 16px; margin: 20px 0; }
+    .editor-area .inline-promo .promo-tag { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 3px 10px; border-radius: 999px; }
+    .editor-area .inline-promo h4 { font-size: 18px; text-transform: uppercase; margin: 10px 0 6px; }
+    .editor-hint { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.5; }
+
+    .preview-overlay { position: fixed; inset: 0; background: rgba(27,27,27,.55); z-index: 200; display: grid; place-items: start center; padding: 24px 16px; overflow-y: auto; }
+    .preview-overlay[hidden] { display: none; }
+    .preview-modal { width: min(900px, 100%); background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden; margin-top: 20px; }
+    .preview-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 3px solid var(--ink); background: #fff; }
+    .preview-head strong { text-transform: uppercase; font-size: 14px; }
+    .preview-scroll { max-height: calc(100vh - 120px); overflow-y: auto; padding: 0 0 30px; background: var(--paper); }
+    .preview-scroll .article-hero { padding: 30px 24px 10px; }
+    .preview-scroll .article-cover { margin: 8px 24px 30px; }
+    .preview-scroll .article-body { padding: 0 24px 24px; }
   </style>
 </head>
 <body>
@@ -157,8 +191,29 @@
           </div>
 
           <div class="field">
-            <label>Текст <span class="hint">разделяй абзацы пустой строкой</span></label>
-            <textarea id="f-body" placeholder="Пиши как в канале. Каждый новый абзац — с пустой строки."></textarea>
+            <label>Текст статьи <span class="hint">верстак — как в WordPress, только проще</span></label>
+            <div class="editor-wrap" id="editor-root">
+              <div class="editor-toolbar">
+                <button type="button" data-cmd="p" title="Обычный абзац">Абзац</button>
+                <button type="button" data-cmd="h2" title="Подзаголовок раздела">H2</button>
+                <button type="button" data-cmd="h3" title="Подзаголовок поменьше">H3</button>
+                <span class="sep"></span>
+                <button type="button" data-cmd="bold" title="Жирный"><b>Ж</b></button>
+                <button type="button" data-cmd="italic" title="Курсив"><i>К</i></button>
+                <button type="button" data-cmd="link" title="Вставить ссылку">🔗 Ссылка</button>
+                <span class="sep"></span>
+                <button type="button" data-cmd="image" title="Картинка с подписью">🖼 Картинка</button>
+                <button type="button" data-cmd="insertUnorderedList" title="Маркированный список">• Список</button>
+                <span class="sep"></span>
+                <button type="button" data-cmd="quote" title="Цитата / выделенный блок">❝ Цитата</button>
+                <button type="button" data-cmd="promo" title="Рекламный блок в тексте">📢 Реклама</button>
+                <span class="sep"></span>
+                <button type="button" data-cmd="undo" title="Отменить (Ctrl+Z)">↩ Отмена</button>
+                <button type="button" data-cmd="redo" title="Вернуть (Ctrl+Shift+Z)">↪ Вернуть</button>
+              </div>
+              <div class="editor-area" id="editor-area" contenteditable="true"><p><br></p></div>
+            </div>
+            <div class="editor-hint">H1 — поле «Заголовок» сверху. В тексте: H2/H3, цитаты, картинки, ссылки, рекламный блок. Выдели фрагмент → жми кнопку. Отмена — ↩ или Ctrl+Z.</div>
           </div>
 
           <div class="field">
@@ -209,6 +264,7 @@
 
         <div class="composer-actions">
           <button class="btn yellow" id="publish">🚀 Опубликовать</button>
+          <button class="btn" id="preview-btn">👁 Предпросмотр</button>
           <button class="btn ghost" id="reset-form">Очистить</button>
           <span id="edit-note" style="align-self:center;font-weight:700;color:var(--blue);display:none">Режим редактирования</span>
         </div>
@@ -256,9 +312,20 @@
 
   <div class="toast" id="toast"></div>
 
+  <div class="preview-overlay" id="preview-overlay" hidden>
+    <div class="preview-modal">
+      <div class="preview-head">
+        <strong>Как будет на сайте</strong>
+        <button type="button" class="mini-btn" id="preview-close">Закрыть</button>
+      </div>
+      <div class="preview-scroll" id="preview-body"></div>
+    </div>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/common.js"></script>
+  <script src="js/editor.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

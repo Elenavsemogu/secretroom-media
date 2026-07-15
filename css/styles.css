@@ -247,6 +247,17 @@ h1, h2, h3, h4 {
 .article-cover img { width: 100%; height: 100%; object-fit: cover; }
 .article-body { max-width: 720px; margin: 0 auto; font-size: 18px; line-height: 1.7; }
 .article-body p { margin: 0 0 22px; }
+.article-body h2 { font-family: var(--font-display); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 36px 0 14px; line-height: 1.15; }
+.article-body h3 { font-family: var(--font-display); font-size: 22px; font-weight: 900; margin: 28px 0 10px; line-height: 1.2; }
+.article-body a { color: var(--blue); font-weight: 700; text-decoration: underline; }
+.article-body ul, .article-body ol { margin: 0 0 22px 24px; }
+.article-body li { margin-bottom: 8px; }
+.article-body .art-figure { margin: 28px 0; border: 3px solid var(--ink); border-radius: var(--radius-sm); overflow: hidden; background: var(--paper); }
+.article-body .art-figure img { display: block; width: 100%; height: auto; }
+.article-body .art-figure figcaption { padding: 12px 16px; font-size: 14px; color: var(--gray); font-weight: 600; border-top: 2px solid var(--ink); }
+.article-body blockquote { margin: 24px 0; padding: 16px 20px; border-left: 4px solid var(--blue); background: var(--paper); font-style: italic; }
+.article-body blockquote.art-quote { border-left-width: 5px; }
+.article-body .inline-promo h4 { font-size: 20px; text-transform: uppercase; margin: 10px 0 6px; }
 .article-body .tg-source { display: inline-flex; align-items: center; gap: 8px; background: var(--blue); color: #fff; font-weight: 700; font-size: 14px; padding: 10px 16px; border-radius: 999px; margin-bottom: 24px; }
 .inline-promo { border: 3px solid var(--ink); border-radius: var(--radius-sm); background: var(--lime); padding: 18px 20px; margin: 26px 0; }
 .inline-promo .promo-tag { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 3px 10px; border-radius: 999px; }
