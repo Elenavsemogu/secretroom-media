@@ -1,4 +1,4 @@
-/* Secret Room Media — лёгкий трекер аналитики → Supabase */
+/* Secret Room Media — сбор событий аналитики (Supabase) */
 (function () {
   const cfg = window.SRM_SUPABASE;
   if (!cfg?.url || !cfg?.anonKey) return;
@@ -38,14 +38,43 @@
     }
   }
 
-  function sourceGroup(ref) {
+  function utmParams() {
+    const p = new URLSearchParams(location.search);
+    const out = {};
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(k => {
+      const v = p.get(k);
+      if (v) out[k] = v.slice(0, 120);
+    });
+    return out;
+  }
+
+  function networkFromHost(host) {
+    const h = (host || "").toLowerCase();
+    if (/t\.me|telegram/.test(h)) return "telegram";
+    if (/vk\.com|vkontakte/.test(h)) return "vk";
+    if (/twitter\.|x\.com/.test(h)) return "x";
+    if (/facebook\.|fb\.com/.test(h)) return "facebook";
+    if (/instagram/.test(h)) return "instagram";
+    return "other";
+  }
+
+  function sourceGroup(ref, utm) {
+    const src = (utm.utm_source || "").toLowerCase();
+    const med = (utm.utm_medium || "").toLowerCase();
+    if (src || med) {
+      if (/telegram|t\.me|vk|twitter|x_|facebook|instagram|social|tg/.test(src + " " + med) || med === "social") return "social";
+      if (/cpc|ppc|ads|paid/.test(med)) return "referral";
+      if (/organic|search/.test(med) || /google|yandex|bing/.test(src)) return "search";
+      if (/email|newsletter/.test(med)) return "referral";
+    }
     if (!ref) return "direct";
     try {
       const u = new URL(ref);
       const host = u.hostname.replace(/^www\./, "");
       const here = location.hostname.replace(/^www\./, "");
-      if (host === here || host.endsWith("github.io") && here.endsWith("github.io")) {
-        if (u.pathname.endsWith("index.html") || u.pathname.endsWith("/") || !u.pathname.split("/").pop()) return "main";
+      if (host === here || (host.endsWith("github.io") && here.endsWith("github.io"))) {
+        const file = u.pathname.split("/").pop() || "";
+        if (!file || file === "index.html" || u.pathname.endsWith("/")) return "main";
         return "internal";
       }
       if (/google\.|yandex\.|bing\.|duckduckgo\.|yahoo\./i.test(host)) return "search";
@@ -78,23 +107,11 @@
   const queue = [];
   let flushTimer = null;
 
-  function send(payload) {
-    queue.push(payload);
-    if (flushTimer) return;
-    flushTimer = setTimeout(flush, 400);
-  }
-
   function flush() {
     flushTimer = null;
     if (!queue.length) return;
     const batch = queue.splice(0, queue.length);
     const body = JSON.stringify(batch.length === 1 ? batch[0] : batch);
-    try {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: "application/json" });
-        // sendBeacon can't set auth headers reliably — use fetch keepalive
-      }
-    } catch (_) {}
     fetch(ENDPOINT, {
       method: "POST",
       headers: {
@@ -108,9 +125,17 @@
     }).catch(() => {});
   }
 
+  function send(payload) {
+    queue.push(payload);
+    if (flushTimer) return;
+    flushTimer = setTimeout(flush, 400);
+  }
+
   function track(eventType, extra) {
     const meta = pageMeta();
     const ref = document.referrer || "";
+    const utm = utmParams();
+    const baseMeta = { ...utm, ...(extra?.meta || {}) };
     send({
       event_type: eventType,
       page_path: location.pathname + location.search,
@@ -120,73 +145,86 @@
       visitor_id: uid("srm_visitor_id"),
       session_id: getSessionId(),
       referrer: ref.slice(0, 500),
-      source_group: sourceGroup(ref),
+      source_group: sourceGroup(ref, utm),
       scroll_pct: extra?.scroll_pct ?? null,
       duration_ms: extra?.duration_ms ?? null,
-      meta: extra?.meta || {}
+      meta: baseMeta
     });
   }
 
-  // pageview
-  track("pageview");
-
-  // legacy localStorage counter for articles
-  const params = new URLSearchParams(location.search);
-  const aid = params.get("id");
-  if (aid && window.SRM_STORE && /article\.html$/i.test(location.pathname)) {
-    // article.js already tracks — don't double localStorage; only server events here
+  function trackSocial(network, href) {
+    track("social", { meta: { network: network || "other", href: (href || "").slice(0, 300) } });
   }
 
-  // scroll depth
-  const seen = new Set();
-  function onScroll() {
+  track("pageview");
+
+  /* Дочитывание: нижняя граница блока материала */
+  const seenScroll = new Set();
+  let readEndSent = false;
+
+  function contentScrollPct() {
+    const el = document.querySelector(".article-body");
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const top = window.scrollY + rect.top;
+      const bottom = top + el.offsetHeight;
+      const viewBottom = window.scrollY + window.innerHeight;
+      const span = Math.max(1, bottom - top - window.innerHeight * 0.15);
+      const progressed = viewBottom - top;
+      return Math.max(0, Math.min(100, Math.round((progressed / span) * 100)));
+    }
     const doc = document.documentElement;
     const body = document.body;
     const h = Math.max(doc.scrollHeight, body.scrollHeight) - window.innerHeight;
-    if (h <= 0) return;
-    const pct = Math.min(100, Math.round((window.scrollY / h) * 100));
+    if (h <= 0) return 100;
+    return Math.min(100, Math.round((window.scrollY / h) * 100));
+  }
+
+  function onScroll() {
+    const pct = contentScrollPct();
     [25, 50, 75, 100].forEach(m => {
-      if (pct >= m && !seen.has(m)) {
-        seen.add(m);
+      if (pct >= m && !seenScroll.has(m)) {
+        seenScroll.add(m);
         track("scroll", { scroll_pct: m });
-        if (m === 100) track("read_end", { scroll_pct: 100 });
       }
     });
+    if (pct >= 95 && !readEndSent) {
+      readEndSent = true;
+      track("read_end", { scroll_pct: 100 });
+    }
   }
   window.addEventListener("scroll", onScroll, { passive: true });
-  setTimeout(onScroll, 800);
+  setTimeout(onScroll, 900);
 
-  // time on page
-  let started = Date.now();
   let active = true;
   document.addEventListener("visibilitychange", () => {
     active = document.visibilityState === "visible";
-    if (active) started = Date.now();
   });
   setInterval(() => {
     if (!active) return;
-    getSessionId(); // touch session
+    getSessionId();
     track("heartbeat", { duration_ms: HEARTBEAT_MS });
   }, HEARTBEAT_MS);
 
-  // click-through to other site pages
   document.addEventListener("click", (e) => {
     const a = e.target.closest("a");
     if (!a || !a.href) return;
     try {
       const url = new URL(a.href, location.href);
       if (url.origin !== location.origin) {
-        if (/t\.me|telegram|twitter|x\.com|facebook|vk\.com/i.test(url.hostname)) {
-          track("social", { meta: { href: url.href.slice(0, 300) } });
+        if (/t\.me|telegram|twitter|x\.com|facebook|vk\.com|instagram/i.test(url.hostname)) {
+          trackSocial(networkFromHost(url.hostname), url.href);
         }
         return;
       }
       const file = url.pathname.split("/").pop() || "";
-      if (file === "article.html" || file === "articles.html" || file === "services.html" || file === "calendar.html") {
-        track("click_through", { meta: { href: url.pathname + url.search } });
+      if (["article.html", "articles.html", "services.html", "calendar.html", "index.html", ""].includes(file) || url.pathname.endsWith("/")) {
+        if (file !== (location.pathname.split("/").pop() || "")) {
+          track("click_through", { meta: { href: url.pathname + url.search } });
+        }
       }
     } catch (_) {}
   });
 
-  window.SRM_TRACK = { track };
+  window.SRM_TRACK = { track, trackSocial };
 })();

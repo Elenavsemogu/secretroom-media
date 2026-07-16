@@ -70,6 +70,12 @@
       ${bodyHTML}
       ${partnerCTA}
       <div class="tags">${(a.tags || []).map(t => `<span class="tag">#${t}</span>`).join("")}</div>
+      <div class="share-bar" id="share-bar">
+        <span class="share-label">Поделиться материалом</span>
+        <button type="button" class="share-btn" data-share="telegram">Telegram</button>
+        <button type="button" class="share-btn" data-share="vk">ВКонтакте</button>
+        <button type="button" class="share-btn" data-share="copy">Копировать ссылку</button>
+      </div>
     </div>`;
 
   // Читайте ещё
@@ -77,4 +83,30 @@
     .filter(x => x.id !== a.id && x.type !== "tg")
     .slice(0, 4);
   document.getElementById("more").innerHTML = more.map(x => srmCardHTML(x)).join("");
+
+  const shareUrl = location.href;
+  const shareText = a.title;
+  document.getElementById("share-bar")?.querySelectorAll("[data-share]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const kind = btn.dataset.share;
+      if (kind === "telegram") {
+        const href = "https://t.me/share/url?url=" + encodeURIComponent(shareUrl) + "&text=" + encodeURIComponent(shareText);
+        if (window.SRM_TRACK) SRM_TRACK.trackSocial("telegram", href);
+        window.open(href, "_blank", "noopener,noreferrer");
+      } else if (kind === "vk") {
+        const href = "https://vk.com/share.php?url=" + encodeURIComponent(shareUrl) + "&title=" + encodeURIComponent(shareText);
+        if (window.SRM_TRACK) SRM_TRACK.trackSocial("vk", href);
+        window.open(href, "_blank", "noopener,noreferrer");
+      } else if (kind === "copy") {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          if (window.SRM_TRACK) SRM_TRACK.trackSocial("copy", shareUrl);
+          btn.textContent = "Ссылка скопирована";
+          setTimeout(() => { btn.textContent = "Копировать ссылку"; }, 1600);
+        } catch (_) {
+          prompt("Скопируйте ссылку:", shareUrl);
+        }
+      }
+    });
+  });
 })();

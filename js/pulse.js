@@ -1,24 +1,26 @@
-/* Пульс — полноценный дашборд аналитики Secret Room Media */
+/* Пульс — дашборд аналитики Secret Room Media */
 (function () {
   const SOURCE_META = {
-    direct: { label: "Прямые заходы", hint: "Ввели адрес сами или из закладок", ico: "🚀", color: "var(--yellow)" },
-    referral: { label: "С других сайтов", hint: "Переходы по внешним ссылкам", ico: "🔗", color: "var(--lime)" },
-    search: { label: "Поиск", hint: "Google, Яндекс и другие", ico: "🔍", color: "var(--blue)" },
-    social: { label: "Соцсети", hint: "Telegram, X, Facebook и т.п.", ico: "📱", color: "var(--pink)" },
-    internal: { label: "Внутри сайта", hint: "Клики с других страниц медиа", ico: "🏠", color: "#ddd" },
-    main: { label: "С главной", hint: "Зашли через главную страницу", ico: "🎯", color: "var(--yellow)" },
-    other: { label: "Другое", hint: "Не определили источник", ico: "·", color: "#ccc" }
+    direct: { label: "Прямые заходы", hint: "Переход по прямому адресу или из закладок", ico: "①", color: "var(--yellow)" },
+    referral: { label: "С других сайтов", hint: "Переходы по внешним ссылкам", ico: "②", color: "var(--lime)" },
+    search: { label: "Поисковые системы", hint: "Органический поиск", ico: "③", color: "var(--blue)" },
+    social: { label: "Социальные сети", hint: "Переходы из социальных сетей и мессенджеров", ico: "④", color: "var(--pink)" },
+    internal: { label: "Внутренние страницы", hint: "Переходы между разделами сайта", ico: "⑤", color: "#ddd" },
+    main: { label: "Главная страница", hint: "Переходы с главной страницы", ico: "⑥", color: "var(--yellow)" },
+    other: { label: "Прочее", hint: "Источник не определён", ico: "·", color: "#ccc" }
   };
 
   const KPI_META = [
-    { key: "pageviews", label: "Просмотры страниц", hint: "Сколько раз открывали страницы (с повторами)", ico: "👁", tone: "y" },
-    { key: "uniques", label: "Уникальные люди", hint: "Сколько разных посетителей (по cookie)", ico: "👤", tone: "l" },
-    { key: "sessions", label: "Сессии", hint: "Отдельные визиты (пауза > 30 мин = новая)", ico: "📈", tone: "w" },
-    { key: "avgTime", label: "Среднее время", hint: "Сколько в среднем сидят на материале", ico: "⏳", tone: "p" },
-    { key: "readRate", label: "Дочитали до конца", hint: "Доскроллили статью до низа", ico: "📜", tone: "w" },
-    { key: "ctr", label: "Перешли дальше", hint: "Кликнули на другой материал/раздел", ico: "🔗", tone: "w" },
-    { key: "social", label: "Соц. действия", hint: "Клики в Telegram / соцсети с сайта", ico: "📣", tone: "b" }
+    { key: "pageviews", label: "Просмотры страниц", hint: "Общее число открытий страниц, включая повторные", ico: "01", tone: "y" },
+    { key: "uniques", label: "Уникальные посетители", hint: "Число уникальных посетителей по идентификатору в браузере", ico: "02", tone: "l" },
+    { key: "sessions", label: "Сессии", hint: "Отдельные визиты; новая сессия после 30 минут бездействия", ico: "03", tone: "w" },
+    { key: "avgTime", label: "Среднее время", hint: "Средняя длительность пребывания на материале", ico: "04", tone: "p" },
+    { key: "readRate", label: "Дочитывание", hint: "Доля просмотров статей с достижением конца текста", ico: "05", tone: "w" },
+    { key: "ctr", label: "Переходы дальше", hint: "Доля просмотров с последующим кликом по разделу сайта", ico: "06", tone: "w" },
+    { key: "social", label: "Социальные действия", hint: "Нажатия «поделиться» и переходы во внешние соцсети", ico: "07", tone: "b" }
   ];
+
+  const NET_LABELS = { telegram: "Telegram", vk: "ВКонтакте", x: "X", facebook: "Facebook", copy: "Копирование", other: "Прочее" };
 
   function $(id) { return document.getElementById(id); }
 
@@ -41,7 +43,7 @@
   function fmtDelta(cur, prev) {
     if (prev == null || prev === 0) {
       if (!cur) return { text: "—", cls: "flat" };
-      return { text: "new", cls: "up" };
+      return { text: "н/д", cls: "flat" };
     }
     const pct = ((cur - prev) / prev) * 100;
     if (Math.abs(pct) < 0.5) return { text: "0%", cls: "flat" };
@@ -68,7 +70,7 @@
   }
 
   function periodLabel(start, end) {
-    const opts = { day: "numeric", month: "short" };
+    const opts = { day: "numeric", month: "short", year: "numeric" };
     return start.toLocaleDateString("ru-RU", opts) + " — " + end.toLocaleDateString("ru-RU", opts);
   }
 
@@ -84,6 +86,17 @@
     });
     if (!res.ok) throw new Error("analytics fetch " + res.status);
     return res.json();
+  }
+
+  function socialNetwork(e) {
+    const n = e.meta && e.meta.network;
+    if (n) return n;
+    const href = (e.meta && e.meta.href) || e.referrer || "";
+    if (/t\.me|telegram/i.test(href)) return "telegram";
+    if (/vk\.com/i.test(href)) return "vk";
+    if (/twitter|x\.com/i.test(href)) return "x";
+    if (/facebook/i.test(href)) return "facebook";
+    return "other";
   }
 
   function summarize(events, start, end) {
@@ -111,14 +124,20 @@
           id: e.article_id,
           title: e.article_title || e.page_path || "Страница",
           author: e.author || "—",
-          views: 0, social: 0, reads: 0
+          views: 0,
+          reads: 0,
+          socialTotal: 0,
+          social: { telegram: 0, vk: 0, x: 0, facebook: 0, copy: 0, other: 0 }
         };
       }
       byArticle[key].views++;
     });
     social.forEach(e => {
       const key = e.article_id || e.page_path || "page";
-      if (byArticle[key]) byArticle[key].social++;
+      if (!byArticle[key]) return;
+      const net = socialNetwork(e);
+      byArticle[key].social[net] = (byArticle[key].social[net] || 0) + 1;
+      byArticle[key].socialTotal++;
     });
     readEnds.forEach(e => {
       const key = e.article_id || e.page_path || "page";
@@ -132,8 +151,6 @@
           row.title = a.title;
           row.author = a.author || row.author;
           row.date = a.date;
-          row.accent = a.accent || "yellow";
-          row.emoji = a.emoji || "📰";
         }
       });
     }
@@ -177,6 +194,12 @@
     });
     const spark = Object.entries(days).map(([date, count]) => ({ date, count }));
 
+    const socialByNet = { telegram: 0, vk: 0, x: 0, facebook: 0, copy: 0, other: 0 };
+    social.forEach(e => {
+      const n = socialNetwork(e);
+      socialByNet[n] = (socialByNet[n] || 0) + 1;
+    });
+
     return {
       pageviews: pageviews.length,
       uniques: visitors.size,
@@ -185,6 +208,7 @@
       readRate,
       ctr,
       social: social.length,
+      socialByNet,
       publications,
       sourceRows,
       authorRows,
@@ -196,9 +220,8 @@
   function chartHTML(points) {
     if (!points.length) {
       return `<div class="pulse-empty">
-        <div class="pulse-empty-ico">📡</div>
-        <strong>Пока тихо</strong>
-        <p>Открой пару страниц сайта — график и цифры появятся здесь.</p>
+        <strong>Данные за период отсутствуют</strong>
+        <p>Показатели появятся после просмотра страниц сайта в выбранном интервале.</p>
       </div>`;
     }
     const w = 640, h = 180, padX = 12, padY = 18;
@@ -239,9 +262,34 @@
         </svg>
       </div>
       <div class="pulse-chart-foot">
-        <span>Пик: <strong>${fmtNum(peak)}</strong> · ${peakDay ? new Date(peakDay.date + "T00:00:00").toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) : "—"}</span>
-        <span>Всего дней в периоде: <strong>${points.length}</strong></span>
+        <span>Максимум за день: <strong>${fmtNum(peak)}</strong>${peakDay ? " (" + new Date(peakDay.date + "T00:00:00").toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) + ")" : ""}</span>
+        <span>Число дней в периоде: <strong>${points.length}</strong></span>
       </div>`;
+  }
+
+  function donutHTML(rows) {
+    if (!rows.length) return "";
+    const total = rows.reduce((s, r) => s + r.count, 0) || 1;
+    const colors = ["#F5DA0F", "#C8E712", "#2E39F7", "#F6ADE5", "#1B1B1B", "#bbb", "#888"];
+    let acc = 0;
+    const stops = rows.map((r, i) => {
+      const start = (acc / total) * 100;
+      acc += r.count;
+      const end = (acc / total) * 100;
+      return `${colors[i % colors.length]} ${start}% ${end}%`;
+    }).join(", ");
+    return `<div class="pulse-donut-wrap">
+      <div class="pulse-donut" style="background:conic-gradient(${stops})"></div>
+      <div class="pulse-donut-legend">
+        ${rows.map((r, i) => `
+          <div class="pulse-donut-item">
+            <i style="background:${colors[i % colors.length]}"></i>
+            <span>${r.label}</span>
+            <strong>${fmtNum(r.count)}</strong>
+            <em>${fmtPct(r.pct)}</em>
+          </div>`).join("")}
+      </div>
+    </div>`;
   }
 
   function render(cur, prev) {
@@ -249,26 +297,16 @@
       let val = cur[meta.key];
       let prevVal = prev[meta.key];
       let display = val;
-      if (meta.key === "avgTime") {
-        display = fmtTime(val);
-        // delta on seconds
-        const d = fmtDelta(val, prevVal);
-        return kpiCard(meta, display, d);
-      }
-      if (meta.key === "readRate" || meta.key === "ctr") {
-        display = fmtPct(val);
-        const d = fmtDelta(val, prevVal);
-        return kpiCard(meta, display, d);
-      }
-      display = fmtNum(val);
-      return kpiCard(meta, display, fmtDelta(val, prevVal));
+      if (meta.key === "avgTime") return kpiCard(meta, fmtTime(val), fmtDelta(val, prevVal));
+      if (meta.key === "readRate" || meta.key === "ctr") return kpiCard(meta, fmtPct(val), fmtDelta(val, prevVal));
+      return kpiCard(meta, fmtNum(val), fmtDelta(val, prevVal));
     }).join("");
 
     $("pulse-spark-wrap").innerHTML = chartHTML(cur.spark);
 
     const maxSrc = cur.sourceRows[0]?.count || 1;
     $("pulse-sources").innerHTML = cur.sourceRows.length
-      ? cur.sourceRows.map(r => `
+      ? donutHTML(cur.sourceRows) + cur.sourceRows.map(r => `
         <div class="pulse-src">
           <div class="pulse-src-ico" style="background:${r.color}">${r.ico}</div>
           <div class="pulse-src-body">
@@ -280,29 +318,42 @@
             <div class="pulse-bar"><i style="width:${Math.max(6, r.count / maxSrc * 100)}%;background:${r.color}"></i></div>
           </div>
         </div>`).join("")
-      : emptyBlock("Пока нет переходов — источники появятся после визитов");
+      : emptyBlock("Данные по источникам за выбранный период отсутствуют.");
 
-    const maxPub = cur.publications[0]?.views || 1;
     $("pulse-pubs").innerHTML = cur.publications.length
-      ? `<div class="pulse-pubs-list">
-          ${cur.publications.slice(0, 10).map((p, i) => `
-            <a class="pulse-pub" href="${p.id ? `article.html?id=${p.id}` : "#"}" ${p.id ? 'target="_blank" rel="noopener"' : 'onclick="return false"'}>
-              <div class="pulse-pub-rank">${i + 1}</div>
-              <div class="pulse-pub-thumb" style="background:var(--${p.accent || "yellow"})">${p.emoji || "📰"}</div>
-              <div class="pulse-pub-body">
-                <div class="pulse-pub-title">${esc(p.title)}</div>
-                <div class="pulse-pub-meta">${esc(p.author)}${p.date ? " · " + srmFmtDate(p.date) : ""}</div>
-                <div class="pulse-bar slim"><i style="width:${Math.max(6, p.views / maxPub * 100)}%"></i></div>
-              </div>
-              <div class="pulse-pub-stats">
-                <div><span>👁</span><strong>${fmtNum(p.views)}</strong></div>
-                <div><span>📣</span><strong>${fmtNum(p.social)}</strong></div>
-                <div><span>📜</span><strong>${fmtNum(p.reads)}</strong></div>
-              </div>
-            </a>`).join("")}
-          <div class="pulse-legend">👁 просмотры · 📣 соц. клики · 📜 дочитали</div>
-        </div>`
-      : emptyBlock("Материалы появятся, когда кто-то откроет статьи");
+      ? `<div class="pulse-table-wrap">
+          <table class="pulse-data-table">
+            <thead>
+              <tr>
+                <th>Материал</th>
+                <th>Дата</th>
+                <th>Автор</th>
+                <th>Просмотры</th>
+                <th>Telegram</th>
+                <th>ВКонтакте</th>
+                <th>Копир.</th>
+                <th>Прочее</th>
+                <th>Всего соц.</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cur.publications.slice(0, 20).map(p => `
+                <tr>
+                  <td class="pulse-td-title">${p.id ? `<a href="article.html?id=${p.id}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title)}</td>
+                  <td>${p.date ? srmFmtDate(p.date) : "—"}</td>
+                  <td>${esc(p.author)}</td>
+                  <td class="num">${fmtNum(p.views)}</td>
+                  <td class="num">${fmtNum(p.social.telegram)}</td>
+                  <td class="num">${fmtNum(p.social.vk)}</td>
+                  <td class="num">${fmtNum(p.social.copy)}</td>
+                  <td class="num">${fmtNum((p.social.other || 0) + (p.social.x || 0) + (p.social.facebook || 0))}</td>
+                  <td class="num"><strong>${fmtNum(p.socialTotal)}</strong></td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div class="pulse-legend">Социальные действия учитываются по нажатиям кнопок «Поделиться» и переходам во внешние сервисы.</div>`
+      : emptyBlock("Данные по материалам за выбранный период отсутствуют.");
 
     const maxAuth = cur.authorRows[0]?.views || 1;
     $("pulse-authors").innerHTML = cur.authorRows.length
@@ -315,11 +366,16 @@
           </div>
           <div class="pulse-author-num">${fmtNum(a.views)}</div>
         </div>`).join("")
-      : emptyBlock("Авторы появятся вместе с просмотрами статей");
+      : emptyBlock("Данные по авторам отсутствуют.");
+
+    const netParts = Object.entries(cur.socialByNet || {})
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => `${NET_LABELS[k] || k}: ${fmtNum(v)}`)
+      .join(" · ");
 
     $("pulse-note").textContent = cur.empty
-      ? "Данных ещё нет. Открой главную и 1–2 статьи на сайте, вернись сюда и нажми «Обновить»."
-      : "Считаем своим трекером Secret Room. Сравнение «↑ / ↓» — с таким же предыдущим периодом.";
+      ? "За выбранный период события не зафиксированы. Откройте страницы сайта и обновите отчёт."
+      : ("Сбор данных выполняется собственным модулем учёта. Изменение к предыдущему сопоставимому периоду указано в карточках показателей." + (netParts ? " Социальные действия: " + netParts + "." : ""));
   }
 
   function kpiCard(meta, display, delta) {
@@ -348,17 +404,15 @@
   async function refresh() {
     const preset = document.querySelector(".pulse-range button.active")?.dataset.range || "week";
     const { start, end, prevStart, prevEnd } = rangeBounds(preset, $("pulse-from"), $("pulse-to"));
-    $("pulse-status").textContent = "Обновляю данные…";
+    $("pulse-status").textContent = "Обновление данных…";
     $("pulse-period-label").textContent = periodLabel(start, end);
     try {
       const [curEvents, prevEvents] = await Promise.all([
         fetchEvents(start, end),
         fetchEvents(prevStart, prevEnd)
       ]);
-      const cur = summarize(curEvents, start, end);
-      const prev = summarize(prevEvents, prevStart, prevEnd);
-      render(cur, prev);
-      $("pulse-status").textContent = "Обновлено · " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      render(summarize(curEvents, start, end), summarize(prevEvents, prevStart, prevEnd));
+      $("pulse-status").textContent = "Обновлено: " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
     } catch (e) {
       $("pulse-status").textContent = "Ошибка загрузки";
       $("pulse-note").textContent = "Не удалось получить данные: " + e.message;
