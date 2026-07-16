@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231B1B1B'/%3E%3Ccircle cx='24' cy='20' r='9' fill='%23F5DA0F'/%3E%3Ccircle cx='24' cy='20' r='4' fill='%232E39F7'/%3E%3C/svg%3E">
   <style>
-    .admin { max-width: 1000px; margin: 0 auto; padding: 24px; }
+    .admin { max-width: 1180px; margin: 0 auto; padding: 24px; }
     .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0 26px; }
     .admin-tabs button { font-weight: 800; font-size: 14px; text-transform: uppercase; border: 2px solid var(--ink); background: var(--white); border-radius: 999px; padding: 9px 18px; cursor: pointer; }
     .admin-tabs button.active { background: var(--yellow); }
@@ -288,43 +288,74 @@
     <!-- ПУЛЬС -->
     <div class="panel" id="panel-stats">
       <div id="pulse-root" class="pulse">
-        <div class="pulse-top">
-          <div>
+        <header class="pulse-hero">
+          <div class="pulse-hero-text">
+            <div class="pulse-live"><span class="pulse-live-dot"></span> LIVE</div>
             <h2 class="pulse-title">Пульс</h2>
-            <p class="pulse-sub">Аналитика Secret Room Media — коротко и по делу</p>
+            <p class="pulse-sub">Как читают Secret Room Media: просмотры, люди, источники и материалы</p>
           </div>
           <div class="pulse-controls">
-            <div class="pulse-range">
+            <div class="pulse-range" role="group" aria-label="Период">
               <button type="button" data-range="today">Сегодня</button>
-              <button type="button" data-range="week" class="active">Неделя</button>
-              <button type="button" data-range="month">Месяц</button>
-              <button type="button" data-range="custom">Период</button>
+              <button type="button" data-range="week" class="active">7 дней</button>
+              <button type="button" data-range="month">30 дней</button>
+              <button type="button" data-range="custom">Свой период</button>
             </div>
-            <button type="button" class="mini-btn" id="pulse-refresh">Обновить</button>
+            <button type="button" class="btn yellow" id="pulse-refresh">↻ Обновить</button>
           </div>
-        </div>
+        </header>
 
         <div class="pulse-custom" id="pulse-custom" hidden>
-          <label>С <input type="date" id="pulse-from"></label>
-          <label>По <input type="date" id="pulse-to"></label>
-          <button type="button" class="mini-btn" id="pulse-apply">Показать</button>
+          <label>С даты <input type="date" id="pulse-from"></label>
+          <label>По дату <input type="date" id="pulse-to"></label>
+          <button type="button" class="btn" id="pulse-apply">Показать</button>
         </div>
 
-        <div class="pulse-status" id="pulse-status">Загрузка…</div>
-        <div class="pulse-kpi" id="pulse-kpi"></div>
-        <div class="pulse-spark-wrap" id="pulse-spark-wrap"></div>
+        <div class="pulse-status-bar">
+          <span id="pulse-status">Загрузка…</span>
+          <span id="pulse-period-label"></span>
+        </div>
+
+        <section class="pulse-kpi" id="pulse-kpi" aria-label="Ключевые показатели"></section>
+
+        <section class="pulse-chart-card">
+          <div class="pulse-card-head">
+            <div>
+              <h3>Динамика просмотров</h3>
+              <p class="pulse-card-hint">Сколько раз открывали страницы по дням выбранного периода</p>
+            </div>
+          </div>
+          <div class="pulse-spark-wrap" id="pulse-spark-wrap"></div>
+        </section>
 
         <div class="pulse-grid">
           <section class="pulse-panel">
-            <h3>Источники</h3>
+            <div class="pulse-card-head">
+              <div>
+                <h3>Откуда приходят</h3>
+                <p class="pulse-card-hint">Группы источников трафика</p>
+              </div>
+            </div>
             <div id="pulse-sources"></div>
           </section>
+
           <section class="pulse-panel pulse-panel-wide">
-            <h3>Материалы</h3>
+            <div class="pulse-card-head">
+              <div>
+                <h3>Что читают</h3>
+                <p class="pulse-card-hint">Материалы по просмотрам за период</p>
+              </div>
+            </div>
             <div id="pulse-pubs"></div>
           </section>
+
           <section class="pulse-panel">
-            <h3>Авторы</h3>
+            <div class="pulse-card-head">
+              <div>
+                <h3>Авторы</h3>
+                <p class="pulse-card-hint">Чьи тексты смотрят чаще</p>
+              </div>
+            </div>
             <div id="pulse-authors"></div>
           </section>
         </div>
