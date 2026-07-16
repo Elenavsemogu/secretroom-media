@@ -435,7 +435,8 @@ h1, h2, h3, h4 {
   width: 52px; height: 52px; border-radius: 14px; border: 2px solid var(--ink);
   display: grid; place-items: center; overflow: hidden; flex: none; position: relative;
 }
-.svc-logo img { width: 28px; height: 28px; object-fit: contain; }
+.svc-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.svc-logo.has-img { background: #fff !important; }
 .svc-logo-fallback {
   font-family: var(--font-display); font-weight: 900; font-size: 16px;
   width: 100%; height: 100%; display: grid; place-items: center;
@@ -443,11 +444,11 @@ h1, h2, h3, h4 {
 .svc-card-name { font-family: var(--font-display); font-weight: 900; font-size: 20px; text-transform: uppercase; margin: 0 0 4px; line-height: 1.1; }
 .svc-card-name a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .svc-card-name a:hover { color: var(--blue); }
-.svc-card-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+.svc-card-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: var(--gray); }
 .svc-card-desc { font-size: 14px; line-height: 1.5; color: #333; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .svc-card-advantage {
   font-size: 14px; font-weight: 800; line-height: 1.4;
-  background: #eef8b4; border: 2px solid var(--ink); border-left: 5px solid var(--yellow);
+  background: #f3f1ec; border: 2px solid var(--ink); border-left: 5px solid var(--ink);
   border-radius: 10px; padding: 10px 12px;
 }
 .svc-card-note { font-size: 12px; color: var(--gray); font-weight: 600; white-space: pre-line; }
@@ -458,7 +459,7 @@ h1, h2, h3, h4 {
 }
 .svc-card-promo span { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #555; }
 .svc-card-promo strong { font-size: 14px; font-weight: 900; }
-.svc-card-promo.copied { background: var(--lime); }
+.svc-card-promo.copied { background: var(--yellow); }
 .svc-card-cta { font-size: 13px; padding: 9px 12px; }
 .svc-card-miss { font-size: 12px; font-weight: 700; color: var(--gray); }
 

@@ -6,13 +6,34 @@
     "Антидетект-браузеры": { accent: "yellow", short: "Антики" },
     "Клоакинг": { accent: "blue", short: "Клоакинг" },
     "Карты": { accent: "pink", short: "Карты" },
-    "Приложения и PWA": { accent: "lime", short: "PWA" },
+    "Приложения и PWA": { accent: "blue", short: "PWA" },
     "Дизайнеры креативов": { accent: "pink", short: "Креативы" },
     "Spy-сервисы": { accent: "blue", short: "Spy" },
     "Трекеры": { accent: "yellow", short: "Трекеры" },
-    "Софт для команд": { accent: "lime", short: "Софт" },
+    "Софт для команд": { accent: "pink", short: "Софт" },
     "Контент для сайтов (SEO)": { accent: "blue", short: "SEO" },
     "Прокси": { accent: "yellow", short: "Прокси" }
+  };
+
+  // Домены для favicon (как в top50) — даже если в БД нет company_url
+  const LOGO_DOMAIN = {
+    "Vision": "browser.vision",
+    "Dolphin": "dolphin-anty.com",
+    "Binom": "binom.org",
+    "Octo Browser": "octobrowser.net",
+    "Cloaking House": "cloaking.house",
+    "Combo Cards": "combocards.com",
+    "TSL Apps": "tslapps.com",
+    "Apps4You": "apps4you.com",
+    "Mafia Creo": "t.me",
+    "Spy House": "spy.house",
+    "AIO (Tracker)": "aio.partners",
+    "AIO (ERP)": "aio.partners",
+    "CostView": "costview.io",
+    "Affilka": "affilka.com",
+    "iGamingTextLab": "igamingtextlab.com",
+    "MangoProxy": "mangoproxy.com",
+    "ProxyShard": "proxyshard.com"
   };
 
   const CATEGORY_ORDER = Object.keys(CATEGORY_META);
@@ -68,11 +89,25 @@
       .toUpperCase() || "?";
   }
 
-  function faviconUrl(p) {
+  function partnerDomain(p) {
+    if (LOGO_DOMAIN[p.company_name]) return LOGO_DOMAIN[p.company_name];
     try {
-      if (p.company_url) return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(new URL(p.company_url).hostname) + "&sz=128";
-      if (p.link_url) return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(new URL(p.link_url).hostname) + "&sz=128";
+      if (p.company_url) return new URL(p.company_url).hostname.replace(/^www\./, "");
+      if (p.link_url) return new URL(p.link_url).hostname.replace(/^www\./, "");
     } catch (_) {}
+    return "";
+  }
+
+  function faviconUrl(p) {
+    const domain = partnerDomain(p);
+    if (!domain) return "";
+    return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=128";
+  }
+
+  function companyHref(p) {
+    if (p.company_url) return p.company_url;
+    const d = partnerDomain(p);
+    if (d && d !== "t.me") return "https://" + d;
     return "";
   }
 
@@ -159,8 +194,9 @@
     const meta = CATEGORY_META[p.category] || { accent: "yellow", short: p.category };
     const accent = meta.accent;
     const fav = faviconUrl(p);
-    const nameInner = p.company_url
-      ? `<a href="${esc(p.company_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.company_name)}</a>`
+    const href = companyHref(p);
+    const nameInner = href
+      ? `<a href="${esc(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.company_name)}</a>`
       : esc(p.company_name);
 
     const promo = p.promo_code
@@ -177,19 +213,19 @@
       <article class="svc-card tone-${accent}${p.is_featured ? " featured" : ""}" style="animation-delay:${Math.min(idx, 12) * 40}ms">
         ${p.is_featured ? `<span class="svc-badge">Отличное предложение</span>` : ""}
         <div class="svc-card-top">
-          <div class="svc-logo" style="background:var(--${accent})">
-            ${fav ? `<img src="${esc(fav)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">` : ""}
+          <div class="svc-logo${fav ? " has-img" : ""}" style="background:var(--${accent})">
+            ${fav ? `<img src="${esc(fav)}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.remove('has-img');this.nextElementSibling.style.display='grid'">` : ""}
             <span class="svc-logo-fallback" style="${fav ? "display:none" : ""}">${esc(initials(p.company_name))}</span>
           </div>
           <div class="svc-card-head">
             <h3 class="svc-card-name">${nameInner}</h3>
-            <div class="svc-card-tag" style="color:var(--${accent === "blue" ? "blue" : accent === "pink" ? "pink" : accent === "lime" ? "ink" : "ink"})">${esc(p.category)}</div>
+            <div class="svc-card-tag">${esc(p.category)}</div>
           </div>
         </div>
         <p class="svc-card-desc">${esc(p.description || "")}</p>
         <div class="svc-card-advantage">${esc(p.benefit || "")}</div>
         ${p.promo_note ? `<div class="svc-card-note">${esc(p.promo_note)}</div>` : ""}
-        <div class="svc-card-foot">${promo}${link}${( !promo && !link) ? `<span class="svc-card-miss">Условия уточняйте у партнёра</span>` : ""}</div>
+        <div class="svc-card-foot">${promo}${link}${(!promo && !link) ? `<span class="svc-card-miss">Условия уточняйте у партнёра</span>` : ""}</div>
       </article>`;
   }
 
