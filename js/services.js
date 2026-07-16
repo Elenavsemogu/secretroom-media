@@ -1,4 +1,4 @@
-/* Страница «Сервисы» — подборки + категории + карточки (формат как у top50, дизайн Secret Room) */
+/* Страница «Сервисы» — категории + карточки (дизайн Secret Room) */
 (function () {
   srmMountChrome("services");
 
@@ -38,17 +38,25 @@
 
   const CATEGORY_ORDER = Object.keys(CATEGORY_META);
 
-  const TASKS = [
-    { id: "all", label: "Все сервисы", cats: null },
-    { id: "anti", label: "Антидетект", cats: ["Антидетект-браузеры"] },
-    { id: "creatives", label: "Креативы и spy", cats: ["Дизайнеры креативов", "Spy-сервисы"] },
-    { id: "track", label: "Трекинг и клоак", cats: ["Трекеры", "Клоакинг"] },
-    { id: "proxy", label: "Прокси", cats: ["Прокси"] },
-    { id: "team", label: "Софт для команд", cats: ["Софт для команд"] },
-    { id: "apps", label: "PWA и приложения", cats: ["Приложения и PWA"] },
-    { id: "pay", label: "Карты и платежи", cats: ["Карты"] },
-    { id: "seo", label: "Контент / SEO", cats: ["Контент для сайтов (SEO)"] }
-  ];
+  // Реф-ссылки / сайты сервисов (CSV часто без URL — только текст «Ссылка…»)
+  const PARTNER_LINKS = {
+    "Vision": "https://browser.vision/",
+    "Dolphin": "https://dolphin-anty.com/",
+    "Binom": "https://binom.org/",
+    "Octo Browser": "https://octobrowser.net/",
+    "Cloaking House": "https://cloaking.house/",
+    "Combo Cards": "https://combocards.com/",
+    "TSL Apps": "https://tslapps.com/",
+    "Apps4You": "https://apps4you.com/",
+    "Spy House": "https://spy.house/",
+    "AIO (Tracker)": "https://aio.partners/",
+    "AIO (ERP)": "https://aio.partners/",
+    "CostView": "https://costview.io/",
+    "Affilka": "https://affilka.com/",
+    "iGamingTextLab": "https://igamingtextlab.com/",
+    "MangoProxy": "https://mangoproxy.com/",
+    "ProxyShard": "https://proxyshard.com/?ref=12749"
+  };
 
   const FALLBACK = [
     { category: "Антидетект-браузеры", sort_order: 10, company_name: "Vision", description: "Антидетект-браузер", benefit: "Скидка 20% на первую покупку", promo_code: "SECRETVISION" },
@@ -71,7 +79,6 @@
   ];
 
   let allRows = [];
-  let activeTask = "all";
   let activeCat = "all";
 
   function esc(s) {
@@ -104,7 +111,9 @@
     return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=128";
   }
 
-  function companyHref(p) {
+  function partnerHref(p) {
+    if (p.link_url) return p.link_url;
+    if (PARTNER_LINKS[p.company_name]) return PARTNER_LINKS[p.company_name];
     if (p.company_url) return p.company_url;
     const d = partnerDomain(p);
     if (d && d !== "t.me") return "https://" + d;
@@ -133,54 +142,26 @@
   }
 
   function filteredRows() {
-    let rows = allRows.slice();
-    const task = TASKS.find(t => t.id === activeTask);
-    if (task && task.cats) rows = rows.filter(r => task.cats.includes(r.category));
-    if (activeCat !== "all") rows = rows.filter(r => r.category === activeCat);
-    return rows;
+    if (activeCat === "all") return allRows.slice();
+    return allRows.filter(r => r.category === activeCat);
   }
 
   function renderFilters() {
     const counts = countByCat(allRows);
-    const tasksEl = document.getElementById("svc-tasks");
     const catsEl = document.getElementById("svc-cats");
-
-    tasksEl.innerHTML = TASKS.map(t => {
-      const n = t.cats
-        ? t.cats.reduce((s, c) => s + (counts[c] || 0), 0)
-        : allRows.length;
-      if (t.id !== "all" && n === 0) return "";
-      return `<button type="button" class="svc-task-pill${activeTask === t.id ? " active" : ""}" data-task="${t.id}">
-        ${esc(t.label)} <span class="svc-count">${n}</span>
-      </button>`;
-    }).join("");
-
-    const task = TASKS.find(t => t.id === activeTask);
-    const catKeys = task && task.cats ? task.cats : CATEGORY_ORDER.filter(c => counts[c]);
-    const totalInView = task && task.cats
-      ? task.cats.reduce((s, c) => s + (counts[c] || 0), 0)
-      : allRows.length;
+    const catKeys = CATEGORY_ORDER.filter(c => counts[c]);
 
     catsEl.innerHTML = `
       <button type="button" class="svc-cat-pill${activeCat === "all" ? " active" : ""}" data-cat="all">
-        Все <span class="svc-count">${totalInView}</span>
+        Все <span class="svc-count">${allRows.length}</span>
       </button>
       ${catKeys.map(c => {
         const n = counts[c] || 0;
-        if (!n) return "";
         return `<button type="button" class="svc-cat-pill${activeCat === c ? " active" : ""}" data-cat="${esc(c)}">
           ${esc((CATEGORY_META[c] && CATEGORY_META[c].short) || c)} <span class="svc-count">${n}</span>
         </button>`;
       }).join("")}`;
 
-    tasksEl.querySelectorAll("[data-task]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        activeTask = btn.dataset.task;
-        activeCat = "all";
-        renderFilters();
-        renderList();
-      });
-    });
     catsEl.querySelectorAll("[data-cat]").forEach(btn => {
       btn.addEventListener("click", () => {
         activeCat = btn.dataset.cat;
@@ -194,19 +175,19 @@
     const meta = CATEGORY_META[p.category] || { accent: "yellow", short: p.category };
     const accent = meta.accent;
     const fav = faviconUrl(p);
-    const href = companyHref(p);
+    const href = partnerHref(p);
     const nameInner = href
       ? `<a href="${esc(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.company_name)}</a>`
       : esc(p.company_name);
 
     const promo = p.promo_code
-      ? `<button type="button" class="svc-card-promo" data-code="${esc(p.promo_code)}">
-           <span>Промокод</span><strong>${esc(p.promo_code)}</strong>
+      ? `<button type="button" class="svc-card-promo" data-code="${esc(p.promo_code)}" title="Скопировать промокод">
+           <span>Промокод · клик = копировать</span><strong>${esc(p.promo_code)}</strong>
          </button>`
       : "";
 
-    const link = p.link_url
-      ? `<a class="btn svc-card-cta" href="${esc(p.link_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.link_label || "Перейти")} ↗</a>`
+    const link = href
+      ? `<a class="btn svc-card-cta" href="${esc(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.link_label || "Перейти")} ↗</a>`
       : "";
 
     return `
@@ -251,7 +232,7 @@
     const root = document.getElementById("services-root");
     const rows = filteredRows();
     if (!rows.length) {
-      root.innerHTML = `<div class="svc-empty">В этой подборке пока нет сервисов.</div>`;
+      root.innerHTML = `<div class="svc-empty">В этой категории пока нет сервисов.</div>`;
       return;
     }
 
