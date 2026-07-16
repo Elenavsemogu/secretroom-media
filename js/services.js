@@ -1,18 +1,32 @@
-/* Страница «Сервисы» — партнёры из Supabase (+ локальный fallback) */
+/* Страница «Сервисы» — подборки + категории + карточки (формат как у top50, дизайн Secret Room) */
 (function () {
   srmMountChrome("services");
 
-  const CATEGORY_ORDER = [
-    "Антидетект-браузеры",
-    "Клоакинг",
-    "Карты",
-    "Приложения и PWA",
-    "Дизайнеры креативов",
-    "Spy-сервисы",
-    "Трекеры",
-    "Софт для команд",
-    "Контент для сайтов (SEO)",
-    "Прокси"
+  const CATEGORY_META = {
+    "Антидетект-браузеры": { accent: "yellow", short: "Антики" },
+    "Клоакинг": { accent: "blue", short: "Клоакинг" },
+    "Карты": { accent: "pink", short: "Карты" },
+    "Приложения и PWA": { accent: "lime", short: "PWA" },
+    "Дизайнеры креативов": { accent: "pink", short: "Креативы" },
+    "Spy-сервисы": { accent: "blue", short: "Spy" },
+    "Трекеры": { accent: "yellow", short: "Трекеры" },
+    "Софт для команд": { accent: "lime", short: "Софт" },
+    "Контент для сайтов (SEO)": { accent: "blue", short: "SEO" },
+    "Прокси": { accent: "yellow", short: "Прокси" }
+  };
+
+  const CATEGORY_ORDER = Object.keys(CATEGORY_META);
+
+  const TASKS = [
+    { id: "all", label: "Все сервисы", cats: null },
+    { id: "anti", label: "Антидетект", cats: ["Антидетект-браузеры"] },
+    { id: "creatives", label: "Креативы и spy", cats: ["Дизайнеры креативов", "Spy-сервисы"] },
+    { id: "track", label: "Трекинг и клоак", cats: ["Трекеры", "Клоакинг"] },
+    { id: "proxy", label: "Прокси", cats: ["Прокси"] },
+    { id: "team", label: "Софт для команд", cats: ["Софт для команд"] },
+    { id: "apps", label: "PWA и приложения", cats: ["Приложения и PWA"] },
+    { id: "pay", label: "Карты и платежи", cats: ["Карты"] },
+    { id: "seo", label: "Контент / SEO", cats: ["Контент для сайтов (SEO)"] }
   ];
 
   const FALLBACK = [
@@ -35,10 +49,31 @@
     { category: "Прокси", sort_order: 20, company_name: "ProxyShard", company_url: "https://proxyshard.com", description: "Прокси-сервис для PPC, SEO, парсинга и автоматизации", benefit: "Скидка на прокси 15%", promo_code: "secret", promo_note: "secret — 15% Datacentre и Residential при регистрации по ссылке" }
   ];
 
+  let allRows = [];
+  let activeTask = "all";
+  let activeCat = "all";
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;")
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function initials(name) {
+    return String(name || "?")
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(w => w[0] || "")
+      .join("")
+      .toUpperCase() || "?";
+  }
+
+  function faviconUrl(p) {
+    try {
+      if (p.company_url) return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(new URL(p.company_url).hostname) + "&sz=128";
+      if (p.link_url) return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(new URL(p.link_url).hostname) + "&sz=128";
+    } catch (_) {}
+    return "";
   }
 
   async function fetchPartners() {
@@ -54,6 +89,108 @@
     if (!res.ok) throw new Error("supabase " + res.status);
     const rows = await res.json();
     return Array.isArray(rows) && rows.length ? rows : FALLBACK;
+  }
+
+  function countByCat(rows) {
+    const m = {};
+    rows.forEach(r => { m[r.category] = (m[r.category] || 0) + 1; });
+    return m;
+  }
+
+  function filteredRows() {
+    let rows = allRows.slice();
+    const task = TASKS.find(t => t.id === activeTask);
+    if (task && task.cats) rows = rows.filter(r => task.cats.includes(r.category));
+    if (activeCat !== "all") rows = rows.filter(r => r.category === activeCat);
+    return rows;
+  }
+
+  function renderFilters() {
+    const counts = countByCat(allRows);
+    const tasksEl = document.getElementById("svc-tasks");
+    const catsEl = document.getElementById("svc-cats");
+
+    tasksEl.innerHTML = TASKS.map(t => {
+      const n = t.cats
+        ? t.cats.reduce((s, c) => s + (counts[c] || 0), 0)
+        : allRows.length;
+      if (t.id !== "all" && n === 0) return "";
+      return `<button type="button" class="svc-task-pill${activeTask === t.id ? " active" : ""}" data-task="${t.id}">
+        ${esc(t.label)} <span class="svc-count">${n}</span>
+      </button>`;
+    }).join("");
+
+    const task = TASKS.find(t => t.id === activeTask);
+    const catKeys = task && task.cats ? task.cats : CATEGORY_ORDER.filter(c => counts[c]);
+    const totalInView = task && task.cats
+      ? task.cats.reduce((s, c) => s + (counts[c] || 0), 0)
+      : allRows.length;
+
+    catsEl.innerHTML = `
+      <button type="button" class="svc-cat-pill${activeCat === "all" ? " active" : ""}" data-cat="all">
+        Все <span class="svc-count">${totalInView}</span>
+      </button>
+      ${catKeys.map(c => {
+        const n = counts[c] || 0;
+        if (!n) return "";
+        return `<button type="button" class="svc-cat-pill${activeCat === c ? " active" : ""}" data-cat="${esc(c)}">
+          ${esc((CATEGORY_META[c] && CATEGORY_META[c].short) || c)} <span class="svc-count">${n}</span>
+        </button>`;
+      }).join("")}`;
+
+    tasksEl.querySelectorAll("[data-task]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeTask = btn.dataset.task;
+        activeCat = "all";
+        renderFilters();
+        renderList();
+      });
+    });
+    catsEl.querySelectorAll("[data-cat]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeCat = btn.dataset.cat;
+        renderFilters();
+        renderList();
+      });
+    });
+  }
+
+  function partnerCard(p, idx) {
+    const meta = CATEGORY_META[p.category] || { accent: "yellow", short: p.category };
+    const accent = meta.accent;
+    const fav = faviconUrl(p);
+    const nameInner = p.company_url
+      ? `<a href="${esc(p.company_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.company_name)}</a>`
+      : esc(p.company_name);
+
+    const promo = p.promo_code
+      ? `<button type="button" class="svc-card-promo" data-code="${esc(p.promo_code)}">
+           <span>Промокод</span><strong>${esc(p.promo_code)}</strong>
+         </button>`
+      : "";
+
+    const link = p.link_url
+      ? `<a class="btn svc-card-cta" href="${esc(p.link_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.link_label || "Перейти")} ↗</a>`
+      : "";
+
+    return `
+      <article class="svc-card tone-${accent}${p.is_featured ? " featured" : ""}" style="animation-delay:${Math.min(idx, 12) * 40}ms">
+        ${p.is_featured ? `<span class="svc-badge">Отличное предложение</span>` : ""}
+        <div class="svc-card-top">
+          <div class="svc-logo" style="background:var(--${accent})">
+            ${fav ? `<img src="${esc(fav)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">` : ""}
+            <span class="svc-logo-fallback" style="${fav ? "display:none" : ""}">${esc(initials(p.company_name))}</span>
+          </div>
+          <div class="svc-card-head">
+            <h3 class="svc-card-name">${nameInner}</h3>
+            <div class="svc-card-tag" style="color:var(--${accent === "blue" ? "blue" : accent === "pink" ? "pink" : accent === "lime" ? "ink" : "ink"})">${esc(p.category)}</div>
+          </div>
+        </div>
+        <p class="svc-card-desc">${esc(p.description || "")}</p>
+        <div class="svc-card-advantage">${esc(p.benefit || "")}</div>
+        ${p.promo_note ? `<div class="svc-card-note">${esc(p.promo_note)}</div>` : ""}
+        <div class="svc-card-foot">${promo}${link}${( !promo && !link) ? `<span class="svc-card-miss">Условия уточняйте у партнёра</span>` : ""}</div>
+      </article>`;
   }
 
   function groupByCategory(rows) {
@@ -74,47 +211,36 @@
     return ordered;
   }
 
-  function partnerCard(p) {
-    const name = p.company_url
-      ? `<a class="svc-name" href="${esc(p.company_url)}" target="_blank" rel="noopener">${esc(p.company_name)} ↗</a>`
-      : `<span class="svc-name">${esc(p.company_name)}</span>`;
-
-    const promo = p.promo_code
-      ? `<button type="button" class="svc-promo" data-code="${esc(p.promo_code)}" title="Скопировать">
-           <span>Промокод</span><strong>${esc(p.promo_code)}</strong>
-         </button>`
-      : "";
-
-    const link = p.link_url
-      ? `<a class="btn svc-link" href="${esc(p.link_url)}" target="_blank" rel="noopener">${esc(p.link_label || "Ссылка для регистрации")} ↗</a>`
-      : (p.link_label && !p.promo_code
-          ? `<span class="svc-link-miss">${esc(p.link_label)} — добавь URL в таблице</span>`
-          : "");
-
-    const note = p.promo_note ? `<div class="svc-note">${esc(p.promo_note)}</div>` : "";
-
-    return `
-      <article class="svc-card${p.is_featured ? " featured" : ""}">
-        ${p.is_featured ? `<span class="svc-badge">Отличное предложение</span>` : ""}
-        <div class="svc-top">${name}</div>
-        <p class="svc-desc">${esc(p.description || "")}</p>
-        <div class="svc-benefit">${esc(p.benefit || "")}</div>
-        <div class="svc-actions">${promo}${link}</div>
-        ${note}
-      </article>`;
-  }
-
-  function render(rows) {
+  function renderList() {
     const root = document.getElementById("services-root");
-    const groups = groupByCategory(rows);
-    root.innerHTML = groups.map(([cat, items]) => `
-      <section class="svc-section">
-        <h3 class="svc-cat">${esc(cat)}</h3>
-        <div class="svc-grid">${items.map(partnerCard).join("")}</div>
-      </section>`).join("");
+    const rows = filteredRows();
+    if (!rows.length) {
+      root.innerHTML = `<div class="svc-empty">В этой подборке пока нет сервисов.</div>`;
+      return;
+    }
 
-    root.querySelectorAll(".svc-promo").forEach(btn => {
-      btn.addEventListener("click", async () => {
+    const groups = groupByCategory(rows);
+    let i = 0;
+    root.innerHTML = groups.map(([cat, items]) => {
+      const meta = CATEGORY_META[cat] || { accent: "yellow" };
+      return `
+        <section class="svc-section" id="cat-${esc(cat)}">
+          <div class="svc-section-head">
+            <h3 class="svc-cat-title">
+              <span class="svc-cat-dot" style="background:var(--${meta.accent})"></span>
+              ${esc(cat)}
+            </h3>
+            <span class="svc-section-count">${items.length}</span>
+          </div>
+          <div class="svc-grid">
+            ${items.map(p => partnerCard(p, i++)).join("")}
+          </div>
+        </section>`;
+    }).join("");
+
+    root.querySelectorAll(".svc-card-promo").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
         const code = btn.dataset.code || "";
         try {
           await navigator.clipboard.writeText(code);
@@ -124,15 +250,24 @@
           strong.textContent = "Скопировано";
           setTimeout(() => { strong.textContent = old; btn.classList.remove("copied"); }, 1400);
         } catch (_) {
-          prompt("Скопируй промокод:", code);
+          prompt("Скопируйте промокод:", code);
         }
       });
     });
   }
 
   const root = document.getElementById("services-root");
-  root.innerHTML = `<div class="svc-loading">Загружаю сервисы…</div>`;
+  root.innerHTML = `<div class="svc-loading">Загрузка сервисов…</div>`;
+
   fetchPartners()
-    .then(render)
-    .catch(() => render(FALLBACK));
+    .then(rows => {
+      allRows = rows;
+      renderFilters();
+      renderList();
+    })
+    .catch(() => {
+      allRows = FALLBACK;
+      renderFilters();
+      renderList();
+    });
 })();

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Сервисы партнёров — Secret Room Media</title>
-  <meta name="description" content="Активные партнёры Secret Room: сервисы с промиками и спецусловиями для читателей.">
+  <meta name="description" content="Подборка партнёрских сервисов Secret Room: по задачам и категориям, со скидками и промокодами для читателей.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -21,18 +21,29 @@
       <span>Сервисы</span>
     </nav>
 
-    <section class="section">
+    <section class="section svc-hero">
       <div class="section-head">
         <h2>Сервисы <span class="dot">/</span> партнёры</h2>
       </div>
-      <p class="svc-lead">Активные партнёры Secret Room — сервисы с промиками и условиями для наших читателей.</p>
+      <p class="svc-lead">Подборка инструментов для работы: фильтр по задаче или категории. Условия и промокоды — для читателей Secret Room.</p>
       <p class="svc-partner-cta">
-        Хочешь попасть в список?
-        <a href="https://t.me/judasvanzandt" target="_blank" rel="noopener">Пиши в личку — @judasvanzandt ↗</a>
+        Стать партнёром:
+        <a href="https://t.me/judasvanzandt" target="_blank" rel="noopener">@judasvanzandt ↗</a>
       </p>
     </section>
 
-    <div id="services-root"></div>
+    <section class="svc-filters" id="svc-filters" aria-label="Фильтры">
+      <div class="svc-filter-block">
+        <div class="svc-filter-label">Подборки</div>
+        <div class="svc-tasks" id="svc-tasks"></div>
+      </div>
+      <div class="svc-filter-block">
+        <div class="svc-filter-label">Категории</div>
+        <div class="svc-cats" id="svc-cats"></div>
+      </div>
+    </section>
+
+    <div id="services-root" class="svc-root"></div>
   </main>
 
   <div id="srm-footer"></div>
