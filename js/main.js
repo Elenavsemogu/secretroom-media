@@ -70,4 +70,6 @@
       ${a.cover ? `<img class="promo-small-thumb" src="${a.cover}" alt="" loading="lazy">` : `<span class="ps-emoji">${a.emoji}</span>`}
       <div class="ps-body"><h4>${a.title}</h4></div>
     </a>`).join("");
+
+  if (window.SRM_CAL_WIDGET) SRM_CAL_WIDGET.mount("events-month");
 })();

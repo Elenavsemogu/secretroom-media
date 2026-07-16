@@ -307,6 +307,98 @@ h1, h2, h3, h4 {
 /* скрытые SEO-ссылки — не мешают юзеру, но видны краулеру */
 .seo-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
+/* ---------- breadcrumbs ---------- */
+.breadcrumbs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 700; color: var(--gray); padding: 18px 0 0; }
+.breadcrumbs a { color: var(--blue); text-decoration: underline; }
+.breadcrumbs span { color: var(--gray); }
+
+/* ---------- calendar embed page ---------- */
+.cal-page-lead { max-width: 62ch; font-size: 16px; margin: -6px 0 18px; color: #33332f; }
+.cal-embed-wrap {
+  border: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden;
+  background: #111; min-height: 70vh; margin-bottom: 30px;
+}
+.cal-embed { display: block; width: 100%; height: min(85vh, 1100px); border: 0; background: #111; }
+
+/* ---------- homepage calendar month widget ---------- */
+.srm-cal-month {
+  display: block; text-decoration: none; color: inherit;
+  border: 3px solid var(--ink); border-radius: var(--radius);
+  background: #1B1B1B; color: #FBF2E8; overflow: hidden;
+  transition: .15s;
+}
+.srm-cal-month:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow); }
+.srm-cal-month-head {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  padding: 18px 20px; border-bottom: 2px solid #333;
+  background: linear-gradient(180deg, #242424, #1B1B1B);
+}
+.srm-cal-num { font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1; color: var(--yellow); }
+.srm-cal-name { font-family: var(--font-display); font-weight: 900; font-size: 28px; text-transform: uppercase; }
+.srm-cal-year { margin-left: auto; font-weight: 800; font-size: 14px; color: #888; text-transform: uppercase; }
+.srm-cal-list { display: grid; gap: 12px; padding: 16px; }
+.srm-cal-card { border: 2px solid #333; border-radius: 12px; overflow: hidden; background: #222; }
+.srm-cal-card.major { position: relative; min-height: 160px; }
+.srm-cal-card.major .srm-cal-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .45; }
+.srm-cal-card.major .srm-cal-card-body { position: relative; z-index: 1; padding: 16px; }
+.srm-cal-card.compact { padding: 12px 14px; border-left: 4px solid var(--blue); }
+.srm-cal-card.is-past { opacity: .55; filter: grayscale(.35); }
+.srm-cal-card h3 { font-size: 18px; font-weight: 800; margin: 6px 0 4px; color: #fff; }
+.srm-cal-card p { font-size: 13px; color: #b8b4a8; margin: 0; }
+.srm-cal-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.srm-cal-tag, .srm-cal-att, .srm-cal-cat {
+  font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px;
+}
+.srm-cal-tag { background: rgba(255,255,255,.12); color: #fff; }
+.srm-cal-att { background: var(--yellow); color: var(--ink); }
+.srm-cal-cat { border: 1px solid rgba(255,255,255,.25); color: #ddd; }
+.srm-cal-promo {
+  margin-top: 10px; display: inline-block; font-size: 12px; font-weight: 800;
+  background: var(--lime); color: var(--ink); padding: 4px 10px; border-radius: 999px;
+}
+.srm-cal-loading, .srm-cal-empty { padding: 24px 8px; color: #aaa; font-weight: 700; }
+.srm-cal-fallback { display: block; margin-top: 6px; color: #ddd; }
+
+/* ---------- services page ---------- */
+.svc-lead { max-width: 64ch; font-size: 17px; margin: -4px 0 10px; }
+.svc-partner-cta { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--gray); }
+.svc-partner-cta a { color: var(--blue); text-decoration: underline; }
+.svc-loading { padding: 30px 0; font-weight: 800; color: var(--gray); }
+.svc-section { margin: 28px 0 36px; }
+.svc-cat {
+  display: inline-block; font-family: var(--font-display); font-weight: 900; font-size: 18px;
+  text-transform: uppercase; background: #dbe4ff; border: 2px solid var(--ink);
+  border-radius: 10px; padding: 8px 14px; margin-bottom: 14px;
+}
+.svc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.svc-card {
+  position: relative; border: 3px solid var(--ink); border-radius: var(--radius-sm);
+  background: var(--white); padding: 18px 18px 16px; display: grid; gap: 10px;
+}
+.svc-card.featured { background: linear-gradient(180deg, #fff7fb, #fff); box-shadow: 6px 0 0 0 #ffd0e4 inset; }
+.svc-badge {
+  position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .04em; background: var(--pink);
+  border: 2px solid var(--ink); border-radius: 999px; padding: 4px 10px;
+}
+.svc-name { font-family: var(--font-display); font-weight: 900; font-size: 22px; text-transform: uppercase; color: var(--blue); }
+a.svc-name { text-decoration: underline; }
+.svc-desc { font-size: 14px; line-height: 1.5; color: #333; margin: 0; padding-right: 90px; }
+.svc-benefit {
+  font-size: 14px; font-weight: 800; background: #e9f8b8; border: 2px solid var(--ink);
+  border-radius: 10px; padding: 10px 12px;
+}
+.svc-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.svc-promo {
+  border: 2px solid var(--ink); border-radius: 10px; background: var(--yellow);
+  padding: 8px 12px; cursor: pointer; display: inline-flex; flex-direction: column; gap: 2px; text-align: left;
+}
+.svc-promo span { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #555; }
+.svc-promo strong { font-size: 15px; font-weight: 900; letter-spacing: .02em; }
+.svc-promo.copied { background: var(--lime); }
+.svc-link { font-size: 13px; padding: 9px 14px; }
+.svc-note { font-size: 12px; color: var(--gray); font-weight: 600; }
+
 /* ---------- utility ---------- */
 .big-cta { border: 3px solid var(--ink); border-radius: var(--radius); background: var(--yellow); padding: 40px; margin: 40px 0; text-align: center; }
 .big-cta h2 { font-size: clamp(28px,4vw,46px); text-transform: uppercase; margin-bottom: 14px; }
@@ -321,6 +413,8 @@ h1, h2, h3, h4 {
   .card.wide .thumb { width: 100%; height: 168px; border-right: 0; border-bottom: 3px solid var(--ink); }
   .card.wide .card-body { width: 100%; }
   .promo-small-grid { grid-template-columns: repeat(2, 1fr); }
+  .svc-grid { grid-template-columns: 1fr; }
+  .svc-desc { padding-right: 0; }
   .team-grid { grid-template-columns: repeat(2,1fr); }
   .stat-row { grid-template-columns: repeat(2,1fr); }
   .footer-grid { grid-template-columns: 1fr 1fr; }

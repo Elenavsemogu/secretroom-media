@@ -24,6 +24,8 @@ function srmHeader(active) {
   const links = [
     ["index.html", "Главная", "home"],
     ["articles.html", "Статьи", "articles"],
+    ["calendar.html", "Календарь", "calendar"],
+    ["services.html", "Сервисы", "services"],
     ["about.html", "О нас", "about"],
     ["careers.html", "Вакансии", "careers"],
   ];
@@ -64,6 +66,8 @@ function srmFooter() {
         <h4>Разделы</h4>
         <a href="index.html">Главная</a>
         <a href="articles.html">Статьи</a>
+        <a href="calendar.html">Календарь</a>
+        <a href="services.html">Сервисы</a>
         <a href="about.html">О нас</a>
         <a href="careers.html">Вакансии</a>
       </div>
