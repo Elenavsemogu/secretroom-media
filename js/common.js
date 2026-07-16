@@ -26,7 +26,6 @@ function srmHeader(active) {
     ["articles.html", "Статьи", "articles"],
     ["calendar.html", "Календарь", "calendar"],
     ["services.html", "Сервисы", "services"],
-    ["about.html", "О нас", "about"],
     ["careers.html", "Вакансии", "careers"],
   ];
   const nav = links.map(([href, label, key]) =>
@@ -68,7 +67,6 @@ function srmFooter() {
         <a href="articles.html">Статьи</a>
         <a href="calendar.html">Календарь</a>
         <a href="services.html">Сервисы</a>
-        <a href="about.html">О нас</a>
         <a href="careers.html">Вакансии</a>
       </div>
       <div>
