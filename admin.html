@@ -117,7 +117,7 @@
     <div class="admin-tabs">
       <button data-tab="create" class="active">✍️ Новый пост</button>
       <button data-tab="posts">📋 Все посты</button>
-      <button data-tab="stats">📊 Статистика</button>
+      <button data-tab="stats">📡 Пульс</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
 
@@ -284,17 +284,52 @@
       <div id="posts-list"></div>
     </div>
 
-    <!-- СТАТИСТИКА -->
+    <!-- ПУЛЬС -->
     <div class="panel" id="panel-stats">
-      <div class="stat-row">
-        <div class="stat y"><div class="num" id="st-total">0</div><div class="lbl">просмотров всего</div></div>
-        <div class="stat l"><div class="num" id="st-posts">0</div><div class="lbl">материалов</div></div>
-        <div class="stat p"><div class="num" id="st-avg">0</div><div class="lbl">в среднем на пост</div></div>
-        <div class="stat b"><div class="num" id="st-today">0</div><div class="lbl">просмотров сегодня</div></div>
+      <div id="pulse-root" class="pulse">
+        <div class="pulse-top">
+          <div>
+            <h2 class="pulse-title">Пульс</h2>
+            <p class="pulse-sub">Аналитика Secret Room Media — коротко и по делу</p>
+          </div>
+          <div class="pulse-controls">
+            <div class="pulse-range">
+              <button type="button" data-range="today">Сегодня</button>
+              <button type="button" data-range="week" class="active">Неделя</button>
+              <button type="button" data-range="month">Месяц</button>
+              <button type="button" data-range="custom">Период</button>
+            </div>
+            <button type="button" class="mini-btn" id="pulse-refresh">Обновить</button>
+          </div>
+        </div>
+
+        <div class="pulse-custom" id="pulse-custom" hidden>
+          <label>С <input type="date" id="pulse-from"></label>
+          <label>По <input type="date" id="pulse-to"></label>
+          <button type="button" class="mini-btn" id="pulse-apply">Показать</button>
+        </div>
+
+        <div class="pulse-status" id="pulse-status">Загрузка…</div>
+        <div class="pulse-kpi" id="pulse-kpi"></div>
+        <div class="pulse-spark-wrap" id="pulse-spark-wrap"></div>
+
+        <div class="pulse-grid">
+          <section class="pulse-panel">
+            <h3>Источники</h3>
+            <div id="pulse-sources"></div>
+          </section>
+          <section class="pulse-panel pulse-panel-wide">
+            <h3>Материалы</h3>
+            <div id="pulse-pubs"></div>
+          </section>
+          <section class="pulse-panel">
+            <h3>Авторы</h3>
+            <div id="pulse-authors"></div>
+          </section>
+        </div>
+
+        <p class="pulse-note" id="pulse-note"></p>
       </div>
-      <div class="section-head" style="margin-top:20px"><h2 style="font-size:26px">Топ материалов</h2></div>
-      <div id="stats-list"></div>
-      <button class="mini-btn del" id="reset-stats" style="margin-top:16px">Сбросить статистику</button>
     </div>
 
     <!-- НАСТРОЙКИ -->
@@ -332,7 +367,9 @@
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/common.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/editor.js"></script>
+  <script src="js/pulse.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

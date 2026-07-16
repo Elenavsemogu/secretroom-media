@@ -100,6 +100,30 @@ function srmMountChrome(active) {
   if (f) f.innerHTML = srmFooter();
   const burger = document.getElementById("burger");
   if (burger) burger.addEventListener("click", () => document.getElementById("nav").classList.toggle("open"));
+  srmBootTracker();
+}
+
+function srmBootTracker() {
+  if (/admin\.html$/i.test(location.pathname)) return;
+  if (window.SRM_TRACK || document.getElementById("srm-analytics-boot")) return;
+  const mark = document.createElement("script");
+  mark.id = "srm-analytics-boot";
+  document.head.appendChild(mark);
+  const load = (src) => new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+  const base = document.currentScript?.src
+    ? document.currentScript.src.replace(/common\.js.*$/, "")
+    : "js/";
+  const root = (document.querySelector('script[src*="common.js"]')?.getAttribute("src") || "js/common.js").replace(/common\.js$/, "");
+  Promise.resolve()
+    .then(() => window.SRM_SUPABASE ? null : load(root + "supabase-config.js"))
+    .then(() => load(root + "tracker.js"))
+    .catch(() => {});
 }
 
 /* карточка статьи для полотна */

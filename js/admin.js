@@ -37,7 +37,7 @@
         b.classList.add("active");
         $("panel-" + b.dataset.tab).classList.add("active");
         if (b.dataset.tab === "posts") renderPosts();
-        if (b.dataset.tab === "stats") renderStats();
+        if (b.dataset.tab === "stats" && window.SRM_PULSE) SRM_PULSE.refresh();
       });
     });
 
@@ -72,11 +72,7 @@
     $("preview-overlay").addEventListener("click", e => { if (e.target === $("preview-overlay")) closePreview(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("preview-overlay").hidden) closePreview(); });
     $("reset-form").addEventListener("click", resetForm);
-    $("reset-stats").addEventListener("click", () => {
-      if (confirm("Сбросить всю статистику просмотров?")) {
-        localStorage.removeItem(SRM_STORE.KEY_STATS); renderStats(); toast("Статистика сброшена");
-      }
-    });
+    if (window.SRM_PULSE) SRM_PULSE.init();
   }
 
   /* ---------- SEO ---------- */
@@ -483,27 +479,5 @@
     }));
   }
 
-  /* ---------- статистика ---------- */
-  function renderStats() {
-    const list = SRM_STORE.allArticles();
-    const st = SRM_STORE.stats();
-    const total = st.total || 0;
-    $("st-total").textContent = total;
-    $("st-posts").textContent = list.length;
-    $("st-avg").textContent = list.length ? Math.round(total / list.length) : 0;
-    const dayAgo = Date.now() - 86400000;
-    $("st-today").textContent = (st.log || []).filter(x => x.t > dayAgo).length;
-
-    const ranked = list.map(a => ({ a, v: SRM_STORE.viewsOf(a.id) })).sort((x, y) => y.v - x.v);
-    const max = ranked[0]?.v || 1;
-    $("stats-list").innerHTML = ranked.map(({ a, v }) => `
-      <div class="post-row">
-        <div class="em" style="background:var(--${a.accent || 'yellow'})">${a.emoji || "📰"}</div>
-        <div class="info">
-          <h4>${a.title}</h4>
-          <div class="bar-track" style="margin-top:8px"><div class="bar-fill" style="width:${Math.max(4, v / max * 100)}%"></div></div>
-        </div>
-        <div style="font-family:var(--font-display);font-weight:900;font-size:24px;min-width:60px;text-align:right">${v}</div>
-      </div>`).join("") || "<p>Пока нет просмотров. Походи по сайту — статистика появится.</p>";
-  }
+  /* статистика → вкладка «Пульс» (js/pulse.js) */
 })();

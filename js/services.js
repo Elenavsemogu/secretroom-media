@@ -3,30 +3,36 @@
   srmMountChrome("services");
 
   const CATEGORY_ORDER = [
+    "Антидетект-браузеры",
+    "Клоакинг",
+    "Карты",
     "Приложения и PWA",
     "Дизайнеры креативов",
     "Spy-сервисы",
     "Трекеры",
     "Софт для команд",
     "Контент для сайтов (SEO)",
-    "Прокси",
-    "Антидетект-браузеры",
-    "Клоакинг",
-    "Карты"
+    "Прокси"
   ];
 
   const FALLBACK = [
-    { category: "Софт для команд", sort_order: 10, company_name: "AIO (ERP)", description: "ERP-система для управления арбитражной командой", benefit: "Скидка 20% на первый месяц", is_featured: true },
-    { category: "Софт для команд", sort_order: 30, company_name: "Affilka", description: "AI-менеджер для рабочих чатов", benefit: "Скидка 15%", promo_code: "SECRETAFFILKA" },
-    { category: "Контент для сайтов (SEO)", sort_order: 10, company_name: "iGamingTextLab", description: "Контент для игроков на 45+ языках без ИИ", benefit: "Скидка 15%", promo_code: "SEOWAKE" },
-    { category: "Прокси", sort_order: 10, company_name: "MangoProxy", description: "Сервис с топовыми прокси", benefit: "Скидка на резидентские и static ISP", promo_code: "SECRETROOM", promo_note: "SECRETROOM 20% / SECRETPROXY 5%" },
-    { category: "Прокси", sort_order: 20, company_name: "ProxyShard", company_url: "https://proxyshard.com", description: "Прокси для PPC, SEO, парсинга", benefit: "Скидка 15%", promo_code: "secret" },
     { category: "Антидетект-браузеры", sort_order: 10, company_name: "Vision", description: "Антидетект-браузер", benefit: "Скидка 20% на первую покупку", promo_code: "SECRETVISION" },
     { category: "Антидетект-браузеры", sort_order: 20, company_name: "Dolphin", description: "Антидетект-браузер", benefit: "Скидка 20% на первую оплату", promo_code: "SecretRoom" },
-    { category: "Антидетект-браузеры", sort_order: 30, company_name: "Binom", description: "Антидетект-браузер", benefit: "Месяц бесплатно + 40% на второй месяц", promo_code: "SecretRoom", is_featured: true },
-    { category: "Антидетект-браузеры", sort_order: 40, company_name: "Octo Browser", description: "Антидетект-браузер", benefit: "Скидка 30% на первую оплату", promo_code: "SECRETROOM30", is_featured: true },
-    { category: "Клоакинг", sort_order: 10, company_name: "Cloaking House", description: "Клоакинг для арбитража", benefit: "Скидка 30% на любую подписку", promo_code: "IGAMCAL30" },
-    { category: "Карты", sort_order: 10, company_name: "Combo Cards", description: "Виртуальные карты", benefit: "40 карт бесплатно", promo_code: "SECRETROOM", is_featured: true }
+    { category: "Антидетект-браузеры", sort_order: 30, company_name: "Binom", description: "Антидетект-браузер", benefit: "Месяц бесплатно и скидка 40% на оплату второго месяца", promo_code: "SecretRoom", is_featured: true },
+    { category: "Антидетект-браузеры", sort_order: 40, company_name: "Octo Browser", description: "Антидетект-браузер", benefit: "Скидка 30% на первую оплату", promo_code: "SECRETROOM30", promo_note: "При регистрации по ссылке введите промокод: SECRETROOM30" },
+    { category: "Клоакинг", sort_order: 10, company_name: "Cloaking House", description: "Сервис клоакинга для арбитража", benefit: "Скидка 30% на любую подписку", promo_code: "IGAMCAL30" },
+    { category: "Карты", sort_order: 10, company_name: "Combo Cards", description: "Сервис по выпуску виртуальных карт", benefit: "40 карт бесплатно", promo_code: "SECRETROOM", link_label: "Ссылка для регистрации", is_featured: true },
+    { category: "Приложения и PWA", sort_order: 10, company_name: "TSL Apps", description: "Аренда PWA-приложений под Gambling", benefit: "+10% к пополнению и 7 дней триала", link_label: "Ссылка для регистрации" },
+    { category: "Приложения и PWA", sort_order: 20, company_name: "Apps4You", description: "Аренда PWA-приложений под Gambling", benefit: "Скидка 10%", promo_code: "SECRET10" },
+    { category: "Дизайнеры креативов", sort_order: 10, company_name: "Mafia Creo", description: "Студия создания рекламных креативов", benefit: "Скидка 20% на первый заказ", promo_code: "крео20" },
+    { category: "Spy-сервисы", sort_order: 10, company_name: "Spy House", description: "Профессиональный спай-сервис для поиска прибыльных рекламных креативов, связок и офферов в форматах Facebook и TikTok, Push, Inpage", benefit: "Скидка 30%", promo_code: "SECRETSPY", is_featured: true },
+    { category: "Трекеры", sort_order: 10, company_name: "AIO (Tracker)", description: "Трекер MTK для аналитики трафика", benefit: "Два месяца по цене одного", link_label: "Ссылка для регистрации" },
+    { category: "Софт для команд", sort_order: 10, company_name: "AIO (ERP)", description: "ERP-система для управления арбитражной командой", benefit: "Скидка 20% на первый месяц", link_label: "Ссылка для регистрации", is_featured: true },
+    { category: "Софт для команд", sort_order: 20, company_name: "CostView", description: "Учет расходов и финансов для медиабаинга", benefit: "Скидка 20%", link_label: "Ссылка для регистрации" },
+    { category: "Софт для команд", sort_order: 30, company_name: "Affilka", description: "AI-менеджер для серфинга по рабочим чатам: автоматизация переписок, сбор аналитики и ключевых данных по партнерам", benefit: "Скидка 15%", promo_code: "SECRETAFFILKA" },
+    { category: "Контент для сайтов (SEO)", sort_order: 10, company_name: "iGamingTextLab", description: "Контент для игроков на 45+ языках, который создают без ИИ реальные игроки", benefit: "Скидка 15%", promo_code: "SEOWAKE" },
+    { category: "Прокси", sort_order: 10, company_name: "MangoProxy", description: "Сервис с топовыми проксями", benefit: "Скидка на резидентские прокси и статические ISP", promo_code: "SECRETROOM", promo_note: "SECRETROOM 20% резидентские · SECRETPROXY 5% static ISP" },
+    { category: "Прокси", sort_order: 20, company_name: "ProxyShard", company_url: "https://proxyshard.com", description: "Прокси-сервис для PPC, SEO, парсинга и автоматизации", benefit: "Скидка на прокси 15%", promo_code: "secret", promo_note: "secret — 15% Datacentre и Residential при регистрации по ссылке" }
   ];
 
   function esc(s) {
@@ -81,7 +87,9 @@
 
     const link = p.link_url
       ? `<a class="btn svc-link" href="${esc(p.link_url)}" target="_blank" rel="noopener">${esc(p.link_label || "Ссылка для регистрации")} ↗</a>`
-      : "";
+      : (p.link_label && !p.promo_code
+          ? `<span class="svc-link-miss">${esc(p.link_label)} — добавь URL в таблице</span>`
+          : "");
 
     const note = p.promo_note ? `<div class="svc-note">${esc(p.promo_note)}</div>` : "";
 
