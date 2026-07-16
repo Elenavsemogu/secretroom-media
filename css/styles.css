@@ -313,7 +313,6 @@ h1, h2, h3, h4 {
 .breadcrumbs span { color: var(--gray); }
 
 /* ---------- calendar embed page ---------- */
-.cal-page-lead { max-width: 62ch; font-size: 16px; margin: -6px 0 18px; color: #33332f; }
 .cal-embed-wrap {
   border: 3px solid var(--ink); border-radius: var(--radius); overflow: hidden;
   background: #111; min-height: 70vh; margin-bottom: 30px;

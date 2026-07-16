@@ -55,6 +55,7 @@
 
     // верстак
     SRM_EDITOR.init();
+    setupDraftAutosave();
 
     // счётчики SEO + превью SERP
     ["f-seo-title", "f-seo-desc", "f-title", "f-dek"].forEach(id => $(id).addEventListener("input", updateSeoUI));
@@ -73,6 +74,112 @@
     document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("preview-overlay").hidden) closePreview(); });
     $("reset-form").addEventListener("click", resetForm);
     if (window.SRM_PULSE) SRM_PULSE.init();
+  }
+
+  /* ---------- черновик (как неотправленное в Telegram) ---------- */
+  const DRAFT_KEY = "srm_composer_draft_v1";
+  let draftTimer = null;
+  let restoringDraft = false;
+
+  function collectDraft() {
+    return {
+      id: $("f-id").value,
+      title: $("f-title").value,
+      dek: $("f-dek").value,
+      type: $("f-type").value,
+      source: $("f-source").value,
+      cat: $("f-cat").value,
+      accent: $("f-accent").value,
+      link: $("f-link").value,
+      cover: $("f-cover").value,
+      bodyHtml: SRM_EDITOR.getHtml(),
+      tags: $("f-tags").value,
+      seoTitle: $("f-seo-title").value,
+      seoDesc: $("f-seo-desc").value,
+      seoKeys: $("f-seo-keys").value,
+      savedAt: Date.now()
+    };
+  }
+
+  function draftIsEmpty(d) {
+    if (!d) return true;
+    const text = (d.title || "") + (d.dek || "") + (d.bodyHtml || "").replace(/<[^>]+>/g, "").replace(/&nbsp;|\s/g, "");
+    return !text.trim() && !d.cover;
+  }
+
+  function saveDraft() {
+    if (restoringDraft) return;
+    const d = collectDraft();
+    if (draftIsEmpty(d)) {
+      localStorage.removeItem(DRAFT_KEY);
+      const note = $("draft-note");
+      if (note) note.textContent = "";
+      return;
+    }
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    const note = $("draft-note");
+    if (note) {
+      const t = new Date(d.savedAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      note.textContent = "Черновик сохранён · " + t;
+    }
+  }
+
+  function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    const note = $("draft-note");
+    if (note) note.textContent = "";
+  }
+
+  function restoreDraft() {
+    let d;
+    try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); }
+    catch (_) { d = null; }
+    if (!d || draftIsEmpty(d)) return;
+    restoringDraft = true;
+    $("f-id").value = d.id || "";
+    $("f-title").value = d.title || "";
+    $("f-dek").value = d.dek || "";
+    if (d.type) $("f-type").value = d.type;
+    if (d.source) $("f-source").value = d.source;
+    if (d.cat) $("f-cat").value = d.cat;
+    if (d.accent) $("f-accent").value = d.accent;
+    $("f-link").value = d.link || "";
+    if (d.cover) setImage(d.cover); else clearImage();
+    SRM_EDITOR.setHtml(d.bodyHtml || "<p><br></p>");
+    $("f-tags").value = d.tags || "";
+    $("f-seo-title").value = d.seoTitle || "";
+    $("f-seo-desc").value = d.seoDesc || "";
+    $("f-seo-keys").value = d.seoKeys || "";
+    if (d.id) $("edit-note").style.display = "inline";
+    updateSeoUI();
+    restoringDraft = false;
+    const note = $("draft-note");
+    if (note) note.textContent = "Восстановлен черновик — можно продолжить";
+    toast("Черновик восстановлен");
+  }
+
+  function setupDraftAutosave() {
+    const fields = ["f-title","f-dek","f-type","f-source","f-cat","f-accent","f-link","f-tags","f-seo-title","f-seo-desc","f-seo-keys"];
+    const schedule = () => {
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(saveDraft, 500);
+    };
+    fields.forEach(id => $(id)?.addEventListener("input", schedule));
+    fields.forEach(id => $(id)?.addEventListener("change", schedule));
+    const area = document.getElementById("editor-area");
+    if (area) {
+      area.addEventListener("input", schedule);
+      area.addEventListener("keyup", schedule);
+    }
+    // cover changes
+    const cover = $("f-cover");
+    if (cover) {
+      const obs = new MutationObserver(schedule);
+      // also hook setImage/clearImage via polling cover value on schedule from dropzone
+    }
+    ["drop-remove","f-image"].forEach(id => $(id)?.addEventListener("change", () => setTimeout(schedule, 50)));
+    $("drop-remove")?.addEventListener("click", () => setTimeout(schedule, 50));
+    restoreDraft();
   }
 
   /* ---------- SEO ---------- */
@@ -123,11 +230,15 @@
     $("f-image-preview").src = dataUrl;
     $("drop-empty").style.display = "none";
     $("drop-filled").style.display = "block";
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraft, 300);
   }
   function clearImage() {
     $("f-cover").value = ""; $("f-image").value = "";
     $("drop-empty").style.display = "block";
     $("drop-filled").style.display = "none";
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraft, 300);
   }
 
   /* ---------- ИИ: общий вызов сервера ---------- */
@@ -419,6 +530,7 @@
       featured: false
     };
     SRM_STORE.upsertArticle(article);
+    clearDraft();
     toast("Опубликовано ✓");
     resetForm();
     renderPosts();
@@ -428,6 +540,7 @@
     $("f-type").value = "main"; $("f-source").value = "original"; $("f-accent").value = "yellow";
     SRM_EDITOR.clear();
     clearImage();
+    clearDraft();
     $("ai-result").style.display = "none"; $("edit-note").style.display = "none";
     updateSeoUI();
   }
