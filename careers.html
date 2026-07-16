@@ -18,7 +18,7 @@
     <section class="section">
       <div class="section-head"><h2>Вакансии <span class="dot">/</span> к нам в команду</h2></div>
       <p style="max-width:640px;font-size:18px;margin-bottom:26px">Работаем удалённо, платим вовремя, не душним. Главное — уметь писать живо и не бояться острых тем.</p>
-      <div class="jobs" id="jobs"></div>
+      <div class="jobs" id="jobs"><div class="svc-loading">Загрузка вакансий…</div></div>
     </section>
 
     <section>
@@ -35,23 +35,7 @@
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/common.js"></script>
-  <script>
-    srmMountChrome("careers");
-    const jobs = [
-      { t: "Редактор / автор", tags: ["Удалёнка", "iGaming", "Full-time"], d: "Писать новости и разборы про рынок. Нужен острый язык и насмотренность." },
-      { t: "SMM-менеджер", tags: ["Удалёнка", "Telegram", "Part-time"], d: "Вести канал, придумывать мемы, разгонять посевы." },
-      { t: "Дизайнер обложек", tags: ["Проектно", "Figma", "Мемы"], d: "Делать те самые дерзкие обложки постов в фирменном стиле." },
-      { t: "Sales / реклама", tags: ["Удалёнка", "%", "B2B"], d: "Продавать рекламу партнёрам рынка и вести их до результата." },
-    ];
-    document.getElementById("jobs").innerHTML = jobs.map(j => `
-      <div class="job">
-        <div>
-          <h3>${j.t}</h3>
-          <div class="j-meta">${j.tags.map(t => `<span class="badge ghost">${t}</span>`).join("")}</div>
-          <p style="margin-top:10px;max-width:60ch;color:#33332f">${j.d}</p>
-        </div>
-        <a class="btn yellow" href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Откликнуться →</a>
-      </div>`).join("");
-  </script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/careers.js"></script>
 </body>
 </html>

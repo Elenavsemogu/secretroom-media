@@ -9,12 +9,16 @@
 
   /* ---------- вход ---------- */
   const gate = $("gate"), admin = $("admin");
-  if (sessionStorage.getItem("srm_admin_ok") === "1") { gate.style.display = "none"; admin.style.display = "block"; init(); }
+  if (sessionStorage.getItem("srm_admin_ok") === "1") {
+    if (!sessionStorage.getItem("srm_admin_pass")) sessionStorage.setItem("srm_admin_pass", DEMO_PASS);
+    gate.style.display = "none"; admin.style.display = "block"; init();
+  }
   $("login-btn").addEventListener("click", tryLogin);
   $("pass").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
   function tryLogin() {
     if ($("pass").value === DEMO_PASS) {
       sessionStorage.setItem("srm_admin_ok", "1");
+      sessionStorage.setItem("srm_admin_pass", DEMO_PASS);
       gate.style.display = "none"; admin.style.display = "block"; init();
     } else toast("Неверный пароль");
   }
@@ -38,6 +42,8 @@
         $("panel-" + b.dataset.tab).classList.add("active");
         if (b.dataset.tab === "posts") renderPosts();
         if (b.dataset.tab === "stats" && window.SRM_PULSE) SRM_PULSE.refresh();
+        if (b.dataset.tab === "services" && window.SRM_ADMIN_CMS) SRM_ADMIN_CMS.loadPartners();
+        if (b.dataset.tab === "careers" && window.SRM_ADMIN_CMS) SRM_ADMIN_CMS.loadJobs();
       });
     });
 

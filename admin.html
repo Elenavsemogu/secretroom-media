@@ -97,6 +97,14 @@
     .preview-scroll .article-hero { padding: 30px 24px 10px; }
     .preview-scroll .article-cover { margin: 8px 24px 30px; }
     .preview-scroll .article-body { padding: 0 24px 24px; }
+
+    .cms-head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    .cms-head p { font-weight:700; color:var(--gray); margin:0; }
+    .cms-checks { display:flex; gap:18px; flex-wrap:wrap; font-weight:700; font-size:14px; margin:4px 0 8px; }
+    .cms-checks label { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+    .cms-empty { font-weight:700; color:var(--gray); padding:20px 0; }
+    .cms-form { margin-bottom:22px; }
+    .cms-split { display:grid; gap:8px; }
   </style>
 </head>
 <body>
@@ -117,6 +125,8 @@
     <div class="admin-tabs">
       <button data-tab="create" class="active">✍️ Новый пост</button>
       <button data-tab="posts">📋 Все посты</button>
+      <button data-tab="services">🛠 Сервисы</button>
+      <button data-tab="careers">💼 Вакансии</button>
       <button data-tab="stats">📡 Пульс</button>
       <button data-tab="settings">⚙️ Настройки</button>
     </div>
@@ -285,6 +295,32 @@
       <div id="posts-list"></div>
     </div>
 
+    <!-- СЕРВИСЫ -->
+    <div class="panel" id="panel-services">
+      <div class="cms-head">
+        <div>
+          <h3 style="text-transform:uppercase;margin:0 0 4px">Сервисы партнёров</h3>
+          <p id="partners-status">—</p>
+        </div>
+        <a class="btn ghost" href="services.html" target="_blank" rel="noopener">Открыть страницу ↗</a>
+      </div>
+      <div id="partner-form-wrap"></div>
+      <div id="partners-list" class="cms-split"></div>
+    </div>
+
+    <!-- ВАКАНСИИ -->
+    <div class="panel" id="panel-careers">
+      <div class="cms-head">
+        <div>
+          <h3 style="text-transform:uppercase;margin:0 0 4px">Вакансии</h3>
+          <p id="jobs-status">—</p>
+        </div>
+        <a class="btn ghost" href="careers.html" target="_blank" rel="noopener">Открыть страницу ↗</a>
+      </div>
+      <div id="job-form-wrap"></div>
+      <div id="jobs-list" class="cms-split"></div>
+    </div>
+
     <!-- ПУЛЬС -->
     <div class="panel" id="panel-stats">
       <div id="pulse-root" class="pulse">
@@ -402,6 +438,8 @@
   <script src="js/supabase-config.js"></script>
   <script src="js/editor.js"></script>
   <script src="js/pulse.js"></script>
+  <script src="js/admin-cms.js"></script>
+  <script src="js/admin-cms-ui.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
