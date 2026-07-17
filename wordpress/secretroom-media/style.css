@@ -1,0 +1,12 @@
+/*
+Theme Name: Secret Room Media
+Theme URI: https://elenavsemogu.github.io/secretroom-media/
+Author: Secret Room
+Description: WordPress-дубль Secret Room Media (фаза 1). Публичный дизайн как у статики; контент через обычную админку WP.
+Version: 1.0.0
+Text Domain: secretroom-media
+Requires at least: 6.0
+Requires PHP: 7.4
+*/
+
+/* Theme stylesheet is loaded from assets/css/styles.css via functions.php */
