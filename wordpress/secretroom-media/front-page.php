@@ -173,8 +173,8 @@ $color_map = ['yellow' => 'y', 'pink' => 'p', 'lime' => 'l', 'blue' => 'b'];
 
   <section>
     <div class="big-cta">
-      <h2>Есть инсайд или хочешь рекламу?</h2>
-      <p style="max-width:52ch;margin:0 auto 20px;font-size:16px">Мы читаем всё. Пиши — оформим дерзко, разгоним по рынку.</p>
+      <h2>Хочешь запартнериться или прорекламироваться у нас?</h2>
+      <p style="max-width:52ch;margin:0 auto 20px;font-size:16px">Пиши нашим менеджерам в телеграм, обсудим!</p>
       <a class="btn" href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Написать в Telegram ↗</a>
     </div>
   </section>

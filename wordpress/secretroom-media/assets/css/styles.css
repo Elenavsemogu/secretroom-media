@@ -1,6 +1,6 @@
 /* ============================================================
    SECRET ROOM MEDIA — design system
-   Светлый фон + дерзкие акценты бренда.
+   Светлый фон + яркие акценты бренда.
    Palette: yellow #F5DA0F · lime #C8E712 · blue #2E39F7 ·
             pink #F6ADE5 · ink #1B1B1B · paper #FBF2E8
    ============================================================ */
@@ -310,7 +310,7 @@ h1, h2, h3, h4 {
 
 /* ---------- footer ---------- */
 .site-footer { background: var(--ink); color: var(--paper); margin-top: 50px; padding: 46px 0 28px; }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 30px; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 30px; }
 .site-footer h4 { text-transform: uppercase; font-size: 14px; margin-bottom: 14px; color: var(--yellow); }
 .site-footer a { display: block; font-size: 14px; padding: 4px 0; color: #d8d4c8; }
 .site-footer a:hover { color: var(--yellow); }

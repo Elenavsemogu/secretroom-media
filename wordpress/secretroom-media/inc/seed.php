@@ -106,7 +106,7 @@ function srm_default_partner_links() {
         'AIO (ERP)' => 'https://aio.partners/',
         'CostView' => 'https://costview.io/',
         'Affilka' => 'https://affilka.com/',
-        'iGamingTextLab' => 'https://igamingtextlab.com/',
+        'TextLab' => null,
         'MangoProxy' => 'https://mangoproxy.com/',
         'ProxyShard' => 'https://proxyshard.com/?ref=12749',
     ];
@@ -116,8 +116,8 @@ function srm_default_jobs() {
     return [
         [
             'title' => 'Редактор / автор',
-            'content' => 'Писать новости и разборы про рынок. Нужен острый язык и насмотренность.',
-            'tags' => 'Удалёнка, iGaming, Full-time',
+            'content' => 'Писать новости и разборы про digital-рынок. Нужен острый язык и насмотренность.',
+            'tags' => 'Удалёнка, Media, Full-time',
             'apply_url' => 'https://t.me/+KXGg4OHsar0xYWRi',
             'menu_order' => 10,
         ],
@@ -130,14 +130,14 @@ function srm_default_jobs() {
         ],
         [
             'title' => 'Дизайнер обложек',
-            'content' => 'Делать те самые дерзкие обложки постов в фирменном стиле.',
+            'content' => 'Делать те самые обложки постов в фирменном стиле.',
             'tags' => 'Проектно, Figma, Мемы',
             'apply_url' => 'https://t.me/+KXGg4OHsar0xYWRi',
             'menu_order' => 30,
         ],
         [
             'title' => 'Sales / реклама',
-            'content' => 'Продавать рекламу партнёрам рынка и вести их до результата.',
+            'content' => 'Продавать размещение сервисам и брендам, вести сделки до результата.',
             'tags' => 'Удалёнка, %, B2B',
             'apply_url' => 'https://t.me/+KXGg4OHsar0xYWRi',
             'menu_order' => 40,

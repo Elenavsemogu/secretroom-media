@@ -10,8 +10,7 @@
 <?php wp_body_open(); ?>
 
 <div class="topbar"><div class="wrap">
-  <span class="live"><span class="dot"></span> Бэкстейдж iGaming-рынка · без цензуры</span>
-  <span>Secret Room Media · <?php echo esc_html(date('Y')); ?></span>
+  <span class="live"><span class="dot"></span> Медиа об iGaming без душных новостей</span>
 </div></div>
 
 <header class="site-header"><div class="wrap">

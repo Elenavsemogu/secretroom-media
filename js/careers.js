@@ -5,7 +5,7 @@
   const FALLBACK = [
     { title: "Редактор / автор", tags: ["Удалёнка", "iGaming", "Full-time"], description: "Писать новости и разборы про рынок. Нужен острый язык и насмотренность.", apply_url: "https://t.me/+KXGg4OHsar0xYWRi" },
     { title: "SMM-менеджер", tags: ["Удалёнка", "Telegram", "Part-time"], description: "Вести канал, придумывать мемы, разгонять посевы.", apply_url: "https://t.me/+KXGg4OHsar0xYWRi" },
-    { title: "Дизайнер обложек", tags: ["Проектно", "Figma", "Мемы"], description: "Делать те самые дерзкие обложки постов в фирменном стиле.", apply_url: "https://t.me/+KXGg4OHsar0xYWRi" },
+    { title: "Дизайнер обложек", tags: ["Проектно", "Figma", "Мемы"], description: "Делать те самые обложки постов в фирменном стиле.", apply_url: "https://t.me/+KXGg4OHsar0xYWRi" },
     { title: "Sales / реклама", tags: ["Удалёнка", "%", "B2B"], description: "Продавать рекламу партнёрам рынка и вести их до результата.", apply_url: "https://t.me/+KXGg4OHsar0xYWRi" }
   ];
 

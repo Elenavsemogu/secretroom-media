@@ -32,8 +32,7 @@ function srmHeader(active) {
     `<a href="${href}" class="${active === key ? "active" : ""}">${label}</a>`).join("");
   return `
   <div class="topbar"><div class="wrap">
-    <span class="live"><span class="dot"></span> Бэкстейдж iGaming-рынка · без цензуры</span>
-    <span>Secret Room Media · 2026</span>
+    <span class="live"><span class="dot"></span> Медиа об iGaming без душных новостей</span>
   </div></div>
   <header class="site-header"><div class="wrap">
     <a class="logo" href="index.html">
@@ -59,7 +58,7 @@ function srmFooter() {
         <a class="logo" href="index.html" style="margin-bottom:14px">
           ${SRM_LOGO}<span class="name" style="color:var(--paper)">Secret Room<span>MEDIA</span></span>
         </a>
-        <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Дерзкий бэкстейдж iGaming-рынка. Скандалы, разборы и самые свежие новости индустрии.</p>
+        <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Медиа о действительно интересном и абсурдном в iGaming. Новости и кейсы, а также наши инструменты и вакансии для людей из сферы.</p>
       </div>
       <div>
         <h4>Разделы</h4>
@@ -70,22 +69,14 @@ function srmFooter() {
         <a href="careers.html">Вакансии</a>
       </div>
       <div>
-        <h4>Темы</h4>
-        <a href="articles.html?cat=Регуляторы">Регуляторы</a>
-        <a href="articles.html?cat=Скандалы">Скандалы</a>
-        <a href="articles.html?cat=Казино">Казино</a>
-        <a href="articles.html?cat=Конференции">Конференции</a>
-      </div>
-      <div>
         <h4>Контакты</h4>
         <a href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Telegram-канал</a>
-        <a href="careers.html">Реклама и сотрудничество</a>
-        <a href="admin.html">Вход для редакции</a>
+        <a href="https://t.me/judasvanzandt" target="_blank" rel="noopener">Реклама и сотрудничество</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Secret Room Media. Все права дерзко защищены.</span>
-      <span>18+ · Материалы носят информационный характер</span>
+      <span>© 2026 Secret Room Media. Все права защищены.</span>
+      <span>18+ · Материалы носят информационный и развлекательный характер</span>
     </div>
     <nav class="seo-hidden" aria-hidden="true">${seo}</nav>
   </div></footer>`;

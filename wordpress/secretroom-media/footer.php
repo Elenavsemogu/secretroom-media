@@ -5,7 +5,7 @@
         <img class="logo-img" src="<?php echo esc_url(srm_logo_url()); ?>" alt="" style="height:36px;width:auto">
         <span class="name" style="color:var(--paper)">Secret Room<span>MEDIA</span></span>
       </a>
-      <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Дерзкий бэкстейдж iGaming-рынка. Скандалы, разборы и самые свежие новости индустрии.</p>
+      <p style="color:#b8b4a8;max-width:40ch;font-size:14px">Медиа о действительно интересном и абсурдном в iGaming. Новости и кейсы, а также наши инструменты и вакансии для людей из сферы.</p>
     </div>
     <div>
       <h4>Разделы</h4>
@@ -16,27 +16,14 @@
       <a href="<?php echo esc_url(srm_page_url('careers')); ?>">Вакансии</a>
     </div>
     <div>
-      <h4>Темы</h4>
-      <?php
-      $cats = ['Регуляторы', 'Скандалы', 'Казино', 'Конференции'];
-      foreach ($cats as $name) {
-          $term = get_term_by('name', $name, 'category');
-          if ($term) {
-              echo '<a href="' . esc_url(get_term_link($term)) . '">' . esc_html($name) . '</a>';
-          }
-      }
-      ?>
-    </div>
-    <div>
       <h4>Контакты</h4>
       <a href="https://t.me/+KXGg4OHsar0xYWRi" target="_blank" rel="noopener">Telegram-канал</a>
-      <a href="<?php echo esc_url(srm_page_url('careers')); ?>">Реклама и сотрудничество</a>
-      <a href="<?php echo esc_url(admin_url()); ?>">Вход для редакции</a>
+      <a href="https://t.me/judasvanzandt" target="_blank" rel="noopener">Реклама и сотрудничество</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© <?php echo esc_html(date('Y')); ?> Secret Room Media. Все права дерзко защищены.</span>
-    <span>18+ · Материалы носят информационный характер</span>
+    <span>© <?php echo esc_html(date('Y')); ?> Secret Room Media. Все права защищены.</span>
+    <span>Материалы носят информационный и развлекательный характер</span>
   </div>
 </div></footer>
 

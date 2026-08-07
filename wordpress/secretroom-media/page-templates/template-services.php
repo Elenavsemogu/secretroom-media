@@ -41,7 +41,7 @@ $total = array_sum(array_map('count', $by_cat));
     <div class="section-head">
       <h2>Сервисы <span class="dot">/</span> партнёры</h2>
     </div>
-    <p class="svc-lead">Партнёрские сервисы со скидками и промокодами для читателей Secret Room. Фильтр по категории.</p>
+    <p class="svc-lead">Партнёрские сервисы со скидками и промокодами для читателей Secret Room</p>
     <p class="svc-partner-cta">
       Стать партнёром:
       <a href="https://t.me/judasvanzandt" target="_blank" rel="noopener">@judasvanzandt ↗</a>
