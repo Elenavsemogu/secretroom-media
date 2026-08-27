@@ -2,4 +2,6 @@ node_modules/
 .DS_Store
 *.log
 ACCESS-HOSTING.md
+ACCESS-SHEET-ROWS.csv
+romana-secretroom-*.csv
 wordpress/secretroom-media.zip
