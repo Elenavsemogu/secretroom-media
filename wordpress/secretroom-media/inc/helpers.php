@@ -26,7 +26,7 @@ function srm_accent($post_id = null) {
 
 function srm_format($post_id = null) {
     $f = srm_meta('_srm_format', $post_id, 'main');
-    return in_array($f, ['main', 'tg', 'promo'], true) ? $f : 'main';
+    return in_array($f, ['main', 'tg', 'promo', 'seo'], true) ? $f : 'main';
 }
 
 function srm_logo_url() {

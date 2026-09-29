@@ -18,13 +18,40 @@ const SRM = {
   },
   allArticles() {
     // пользовательские идут первыми (свежак), затем дефолтные
+    // SEO-статьи (type=seo) скрыты с главной и ленты — только по прямой ссылке /seo/*.html
+    const user = this.userArticles();
+    const userIds = new Set(user.map(a => a.id));
+    const base = (window.SRM_DEFAULT_ARTICLES || []).filter(a => !userIds.has(a.id));
+    return [...user, ...base].filter(a => !a.hidden && a.type !== "seo");
+  },
+  allArticlesAdmin() {
     const user = this.userArticles();
     const userIds = new Set(user.map(a => a.id));
     const base = (window.SRM_DEFAULT_ARTICLES || []).filter(a => !userIds.has(a.id));
     return [...user, ...base].filter(a => !a.hidden);
   },
-  byId(id) { return this.allArticles().find(a => a.id === id); },
-  bySlug(slug) { return this.allArticles().find(a => a.slug === slug); },
+  byId(id) {
+    const user = this.userArticles().find(a => a.id === id);
+    if (user) return user;
+    return (window.SRM_DEFAULT_ARTICLES || []).find(a => a.id === id);
+  },
+  bySlug(slug) {
+    return this.allArticlesAdmin().find(a => a.slug === slug);
+  },
+  seoCatalog() {
+    const baked = window.SRM_SEO_ARTICLES || [];
+    const userSeo = this.userArticles()
+      .filter(a => a.type === "seo")
+      .map(a => ({
+        slug: a.slug || a.id,
+        title: (a.seo && a.seo.title) || a.title,
+        description: (a.seo && a.seo.description) || a.dek || "",
+        keywords: (a.seo && a.seo.keywords) || "",
+        intro: a.dek || ""
+      }));
+    const seen = new Set(baked.map(s => s.slug));
+    return [...baked, ...userSeo.filter(s => !seen.has(s.slug))];
+  },
 
   upsertArticle(article) {
     const list = this.userArticles();

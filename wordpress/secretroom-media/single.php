@@ -8,13 +8,18 @@ while (have_posts()) : the_post();
   $cats   = get_the_category();
   $cat    = $cats ? $cats[0]->name : '';
   $partner = srm_meta('_srm_partner_link');
+  $is_seo = ($format === 'seo');
 ?>
 <main class="wrap">
   <article>
     <nav class="breadcrumbs" aria-label="Хлебные крошки">
       <a href="<?php echo esc_url(home_url('/')); ?>">Главная</a>
       <span>/</span>
-      <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Статьи</a>
+      <?php if ($is_seo) : ?>
+        <span>Гайд</span>
+      <?php else : ?>
+        <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Статьи</a>
+      <?php endif; ?>
       <span>/</span>
       <span><?php the_title(); ?></span>
     </nav>
@@ -24,11 +29,15 @@ while (have_posts()) : the_post();
         <span class="badge promo">Реклама</span>
       <?php elseif ($format === 'tg') : ?>
         <span class="badge tg">из Telegram</span>
+      <?php elseif ($is_seo) : ?>
+        <span class="badge cat">Гайд</span>
       <?php else : ?>
         <span class="badge cat"><?php echo esc_html($cat); ?></span>
       <?php endif; ?>
       <h1 class="display" style="font-size:clamp(32px,5vw,56px);margin:14px 0 12px;text-transform:uppercase"><?php the_title(); ?></h1>
-      <p class="dek" style="font-size:18px;max-width:60ch;margin-bottom:14px"><?php echo esc_html(get_the_excerpt()); ?></p>
+      <?php if (!$is_seo) : ?>
+        <p class="dek" style="font-size:18px;max-width:60ch;margin-bottom:14px"><?php echo esc_html(get_the_excerpt()); ?></p>
+      <?php endif; ?>
       <div class="meta" style="color:var(--gray);font-weight:700;font-size:14px">
         <?php echo esc_html(get_the_author()); ?> ·
         <?php echo esc_html(srm_fmt_date(get_the_date('c'))); ?> ·
@@ -36,17 +45,19 @@ while (have_posts()) : the_post();
       </div>
     </header>
 
-    <?php if (has_post_thumbnail()) : ?>
-      <div class="article-cover" style="margin:18px 0 28px;border:3px solid var(--ink);border-radius:var(--radius);overflow:hidden">
-        <?php the_post_thumbnail('large', ['style' => 'display:block;width:100%;height:auto']); ?>
-      </div>
-    <?php else : ?>
-      <div class="article-cover" style="margin:18px 0 28px;height:220px;border:3px solid var(--ink);border-radius:var(--radius);background:var(--<?php echo esc_attr($accent); ?>);display:grid;place-items:center;font-size:72px">
-        <?php echo esc_html($emoji); ?>
-      </div>
+    <?php if (!$is_seo) : ?>
+      <?php if (has_post_thumbnail()) : ?>
+        <div class="article-cover" style="margin:18px 0 28px;border:3px solid var(--ink);border-radius:var(--radius);overflow:hidden">
+          <?php the_post_thumbnail('large', ['style' => 'display:block;width:100%;height:auto']); ?>
+        </div>
+      <?php else : ?>
+        <div class="article-cover" style="margin:18px 0 28px;height:220px;border:3px solid var(--ink);border-radius:var(--radius);background:var(--<?php echo esc_attr($accent); ?>);display:grid;place-items:center;font-size:72px">
+          <?php echo esc_html($emoji); ?>
+        </div>
+      <?php endif; ?>
     <?php endif; ?>
 
-    <div class="article-body">
+    <div class="article-body<?php echo $is_seo ? ' seo-article' : ''; ?>">
       <?php the_content(); ?>
       <?php if ($partner) : ?>
         <div class="inline-promo" style="background:var(--<?php echo esc_attr($accent); ?>)">
@@ -58,14 +69,16 @@ while (have_posts()) : the_post();
     </div>
   </article>
 
+  <?php if (!$is_seo) : ?>
   <section class="section">
     <div class="section-head"><h2>Читайте ещё</h2><a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Все статьи →</a></div>
     <div class="cards">
       <?php
+      $seo_ids = srm_seo_post_ids();
       $more = new WP_Query([
           'post_type'      => 'post',
           'posts_per_page' => 3,
-          'post__not_in'   => [get_the_ID()],
+          'post__not_in'   => array_merge([get_the_ID()], $seo_ids),
       ]);
       while ($more->have_posts()) : $more->the_post();
           echo srm_card_html(get_the_ID());
@@ -74,6 +87,7 @@ while (have_posts()) : the_post();
       ?>
     </div>
   </section>
+  <?php endif; ?>
 </main>
 <?php
 endwhile;
