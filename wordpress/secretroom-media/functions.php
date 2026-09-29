@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('SRM_THEME_VERSION', '1.4.0');
+define('SRM_THEME_VERSION', '1.4.1');
 define('SRM_THEME_DIR', get_template_directory());
 define('SRM_THEME_URI', get_template_directory_uri());
 
@@ -70,11 +70,11 @@ add_action('after_switch_theme', function () {
 
 /** One-time rewrite flush after SEO URL rules land (theme 1.4+). */
 add_action('init', function () {
-    if (get_option('srm_seo_rewrites_flushed') === '1.4.0') {
+    if (get_option('srm_seo_rewrites_flushed') === '1.4.1') {
         return;
     }
     flush_rewrite_rules(false);
-    update_option('srm_seo_rewrites_flushed', '1.4.0');
+    update_option('srm_seo_rewrites_flushed', '1.4.1');
 }, 99);
 
 add_action('init', function () {

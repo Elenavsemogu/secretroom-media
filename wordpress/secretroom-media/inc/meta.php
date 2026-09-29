@@ -79,10 +79,10 @@ function srm_render_post_metabox($post) {
         <option value="main" <?php selected($format, 'main'); ?>>Основная статья</option>
         <option value="tg" <?php selected($format, 'tg'); ?>>Из Telegram (сайдбар)</option>
         <option value="promo" <?php selected($format, 'promo'); ?>>Реклама / посев</option>
-        <option value="seo" <?php selected($format, 'seo'); ?>>SEO (скрытая, только поиск)</option>
+        <option value="seo" <?php selected($format, 'seo'); ?>>SEO (не на главной, в конце «Статьи»)</option>
       </select>
     </label></p>
-    <p class="description" style="margin-top:-6px">SEO-формат: не на главной и не в ленте «Статьи», но индексируется. URL: <code>/seo/ярлык/</code></p>
+    <p class="description" style="margin-top:-6px">Не попадает на главную. В разделе «Статьи» — в конце списка. URL: <code>/seo/ярлык/</code></p>
     <p><label>Акцент<br>
       <select name="srm_accent" style="width:100%">
         <?php foreach (['yellow'=>'Жёлтый','lime'=>'Лайм','pink'=>'Розовый','blue'=>'Синий'] as $k=>$l): ?>

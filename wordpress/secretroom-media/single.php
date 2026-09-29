@@ -15,11 +15,7 @@ while (have_posts()) : the_post();
     <nav class="breadcrumbs" aria-label="Хлебные крошки">
       <a href="<?php echo esc_url(home_url('/')); ?>">Главная</a>
       <span>/</span>
-      <?php if ($is_seo) : ?>
-        <span>Гайд</span>
-      <?php else : ?>
-        <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Статьи</a>
-      <?php endif; ?>
+      <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Статьи</a>
       <span>/</span>
       <span><?php the_title(); ?></span>
     </nav>
@@ -30,12 +26,12 @@ while (have_posts()) : the_post();
       <?php elseif ($format === 'tg') : ?>
         <span class="badge tg">из Telegram</span>
       <?php elseif ($is_seo) : ?>
-        <span class="badge cat">Гайд</span>
+        <span class="badge cat"><?php echo esc_html($cat ?: 'Гайд'); ?></span>
       <?php else : ?>
         <span class="badge cat"><?php echo esc_html($cat); ?></span>
       <?php endif; ?>
       <h1 class="display" style="font-size:clamp(32px,5vw,56px);margin:14px 0 12px;text-transform:uppercase"><?php the_title(); ?></h1>
-      <?php if (!$is_seo) : ?>
+      <?php if (has_excerpt()) : ?>
         <p class="dek" style="font-size:18px;max-width:60ch;margin-bottom:14px"><?php echo esc_html(get_the_excerpt()); ?></p>
       <?php endif; ?>
       <div class="meta" style="color:var(--gray);font-weight:700;font-size:14px">
@@ -69,12 +65,11 @@ while (have_posts()) : the_post();
     </div>
   </article>
 
-  <?php if (!$is_seo) : ?>
   <section class="section">
     <div class="section-head"><h2>Читайте ещё</h2><a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/articles/')); ?>">Все статьи →</a></div>
     <div class="cards">
       <?php
-      $seo_ids = srm_seo_post_ids();
+      $seo_ids = function_exists('srm_seo_post_ids') ? srm_seo_post_ids() : [];
       $more = new WP_Query([
           'post_type'      => 'post',
           'posts_per_page' => 3,
@@ -87,7 +82,6 @@ while (have_posts()) : the_post();
       ?>
     </div>
   </section>
-  <?php endif; ?>
 </main>
 <?php
 endwhile;

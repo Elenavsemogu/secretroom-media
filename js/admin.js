@@ -540,7 +540,7 @@
     SRM_STORE.upsertArticle(article);
     if (type === "seo") {
       downloadSeoHtml(article);
-      toast("SEO-статья сохранена. Скачан HTML — положи файл в папку seo/ и добавь в sitemap.xml");
+      toast("SEO-гайд сохранён. Скачан HTML — положи в seo/ и добавь URL в sitemap.xml. На сайте он будет в конце списка «Статьи».");
     } else {
       toast("Опубликовано ✓");
     }
@@ -635,8 +635,8 @@ ${inner}
   /* ---------- список постов ---------- */
   function renderPosts() {
     const list = SRM_STORE.allArticlesAdmin();
-    $("posts-count").textContent = `Всего материалов: ${list.length} (SEO — скрыты с главной, свои — редактируются)`;
-    const typeLabel = { main: "Статья", tg: "из ТГ", promo: "Реклама", seo: "SEO скрытая" };
+    $("posts-count").textContent = `Всего материалов: ${list.length} (SEO-гайды — не на главной, в конце списка статей)`;
+    const typeLabel = { main: "Статья", tg: "из ТГ", promo: "Реклама", seo: "SEO-гайд" };
     $("posts-list").innerHTML = list.map(a => `
       <div class="post-row">
         <div class="em" style="background:var(--${a.accent || 'yellow'})">${a.emoji || "📰"}</div>

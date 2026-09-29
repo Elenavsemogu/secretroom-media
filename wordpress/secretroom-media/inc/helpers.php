@@ -75,7 +75,9 @@ function srm_card_html($post_id, $wide = false) {
     $cat    = $cats ? $cats[0]->name : '';
     $badge  = $format === 'tg'
         ? '<span class="badge tg">из Telegram</span>'
-        : '<span class="badge cat">' . esc_html($cat) . '</span>';
+        : ($format === 'seo'
+            ? '<span class="badge cat">Гайд</span>'
+            : '<span class="badge cat">' . esc_html($cat) . '</span>');
     $thumb = get_the_post_thumbnail($post_id, 'large', ['class' => 'thumb-img', 'loading' => 'lazy']);
     $wide_cls = $wide ? ' wide' : '';
 

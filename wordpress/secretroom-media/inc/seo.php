@@ -1,6 +1,7 @@
 <?php
 /**
- * Hidden SEO articles: indexed, not shown on homepage / articles feed.
+ * SEO articles: not on the homepage feed, but visible at the end of «Статьи»
+ * and fully indexable by search engines (/seo/{slug}/).
  */
 if (!defined('ABSPATH')) {
     exit;
@@ -30,27 +31,21 @@ function srm_seo_post_ids() {
 }
 
 /**
- * Exclude SEO posts from public listings (home blog index, main query archives).
- * Keep them visible on singular, search (optional), and admin.
+ * Homepage uses srm_query_by_format(main/tg/promo) — SEO never appears there.
+ * On the blog index («Статьи») keep SEO posts and sort them to the end.
  */
-add_action('pre_get_posts', function ($query) {
+add_filter('posts_clauses', function ($clauses, $query) {
     if (is_admin() || !$query->is_main_query()) {
-        return;
+        return $clauses;
     }
-    // Allow singular SEO posts.
-    if ($query->is_singular()) {
-        return;
+    if (!$query->is_home() && !$query->is_category() && !$query->is_tag()) {
+        return $clauses;
     }
-    // Keep SEO posts findable via site search / feeds would dilute UX — exclude from feed & blog.
-    if ($query->is_home() || $query->is_category() || $query->is_tag() || $query->is_date() || $query->is_author() || $query->is_feed()) {
-        $ids = srm_seo_post_ids();
-        if ($ids) {
-            $not_in = $query->get('post__not_in');
-            $not_in = is_array($not_in) ? $not_in : [];
-            $query->set('post__not_in', array_values(array_unique(array_merge($not_in, $ids))));
-        }
-    }
-});
+    global $wpdb;
+    $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS srm_seo_fmt ON ({$wpdb->posts}.ID = srm_seo_fmt.post_id AND srm_seo_fmt.meta_key = '_srm_format') ";
+    $clauses['orderby'] = " CASE WHEN srm_seo_fmt.meta_value = 'seo' THEN 1 ELSE 0 END ASC, " . $clauses['orderby'];
+    return $clauses;
+}, 20, 2);
 
 /** Pretty URLs: /seo/{slug}/ for format=seo posts. */
 add_action('init', function () {
@@ -80,9 +75,6 @@ add_action('wp_head', function () {
         return;
     }
     $id = get_the_ID();
-    if (srm_format($id) !== 'seo') {
-        // Still output description if set on any post.
-    }
     $desc = get_post_meta($id, '_srm_seo_description', true);
     if (!$desc) {
         $desc = get_the_excerpt($id);
@@ -111,6 +103,26 @@ add_filter('document_title_parts', function ($parts) {
     return $parts;
 });
 
+/**
+ * Auto-import bundled SEO guides once after theme update.
+ */
+add_action('init', function () {
+    if (get_option('srm_seo_articles_imported') === '1.4.1') {
+        return;
+    }
+    // Avoid running during AJAX/cron noise before DB is ready.
+    if (defined('DOING_AJAX') && DOING_AJAX) {
+        return;
+    }
+    if (!function_exists('srm_import_seo_articles')) {
+        return;
+    }
+    srm_import_seo_articles();
+    update_option('srm_seo_articles_imported', '1.4.1');
+    // Clear cached ID list.
+    // (srm_seo_post_ids uses a static; next request will refresh.)
+}, 40);
+
 /** Admin: import SEO articles tool. */
 add_action('admin_menu', function () {
     add_management_page(
@@ -128,30 +140,35 @@ function srm_seo_import_page() {
     }
     $msg = '';
     if (isset($_POST['srm_seo_import']) && check_admin_referer('srm_seo_import_action')) {
+        delete_option('srm_seo_articles_imported');
         $n = srm_import_seo_articles();
-        $msg = sprintf('Импортировано SEO-статей: %d. На главной и в разделе «Статьи» они не появятся, но будут в sitemap и доступны по прямым ссылкам /seo/…', $n);
+        update_option('srm_seo_articles_imported', '1.4.1');
+        $msg = sprintf(
+            'Импортировано новых SEO-статей: %d. Они не на главной, но в конце списка «Статьи» и по адресу /seo/…',
+            $n
+        );
         flush_rewrite_rules(false);
     }
     ?>
     <div class="wrap">
-      <h1>Secret Room — скрытые SEO-статьи</h1>
-      <p>Эти материалы <strong>не показываются на главной и в ленте статей</strong>, но открыты для индексации поисковиками.</p>
-      <h2>Как добавить новую SEO-статью вручную</h2>
+      <h1>Secret Room — SEO-статьи (не на главной)</h1>
+      <p>Эти материалы <strong>не показываются на главной</strong>, но видны пользователям <strong>в конце раздела «Статьи»</strong> и индексируются поисковиками.</p>
+      <h2>Как добавить новую SEO-статью</h2>
       <ol>
         <li>Записи → Добавить</li>
-        <li>Напишите текст как обычно (можно вставить HTML-таблицы)</li>
-        <li>Справа в блоке «Secret Room — оформление» выберите формат <strong>SEO (скрытая, только поиск)</strong></li>
+        <li>Напишите текст как обычно</li>
+        <li>Справа в «Secret Room — оформление» выберите формат <strong>SEO (не на главной)</strong></li>
         <li>Заполните SEO-заголовок и описание</li>
-        <li>Опубликуйте — статья получит адрес вида <code>/seo/ваш-ярлык/</code></li>
+        <li>Опубликуйте — адрес вида <code>/seo/ваш-ярлык/</code>, в ленте статей — в конце списка</li>
       </ol>
-      <h2>Импорт трёх готовых гайдов</h2>
-      <p>Загрузит статьи про провайдеров, партнёрки и ТОП-20 слотов (без дублей по slug).</p>
+      <h2>Импорт готовых гайдов</h2>
+      <p>Загрузит статьи про провайдеров, партнёрки и ТОП-20 слотов (без дублей по slug). При обновлении темы импорт запускается сам один раз.</p>
       <?php if ($msg) : ?>
         <div class="notice notice-success"><p><?php echo esc_html($msg); ?></p></div>
       <?php endif; ?>
       <form method="post">
         <?php wp_nonce_field('srm_seo_import_action'); ?>
-        <p><button type="submit" name="srm_seo_import" class="button button-primary" value="1">Импортировать SEO-статьи</button></p>
+        <p><button type="submit" name="srm_seo_import" class="button button-primary" value="1">Импортировать / обновить SEO-статьи</button></p>
       </form>
       <?php
       $ids = srm_seo_post_ids();
@@ -197,7 +214,6 @@ function srm_seed_seo_article($a) {
     }
     $existing = get_page_by_path($slug, OBJECT, 'post');
     if ($existing) {
-        // Update format/meta if already exists as plain post.
         update_post_meta($existing->ID, '_srm_format', 'seo');
         if (!empty($a['seo_title'])) {
             update_post_meta($existing->ID, '_srm_seo_title', sanitize_text_field($a['seo_title']));
@@ -207,6 +223,15 @@ function srm_seed_seo_article($a) {
         }
         if (!empty($a['keywords'])) {
             update_post_meta($existing->ID, '_srm_seo_keywords', sanitize_text_field($a['keywords']));
+        }
+        // Refresh content from bundled seed when re-importing.
+        if (!empty($a['content'])) {
+            wp_update_post([
+                'ID'           => $existing->ID,
+                'post_content' => $a['content'],
+                'post_excerpt' => $a['excerpt'] ?? ($a['description'] ?? ''),
+                'post_title'   => $a['title'] ?? get_the_title($existing),
+            ]);
         }
         return false;
     }
@@ -222,6 +247,16 @@ function srm_seed_seo_article($a) {
 
     if (is_wp_error($post_id)) {
         return false;
+    }
+
+    // Category «Гайды» for the articles filter pills.
+    $term = term_exists('Гайды', 'category');
+    if (!$term) {
+        $term = wp_insert_term('Гайды', 'category');
+    }
+    if (!is_wp_error($term)) {
+        $tid = (int) (is_array($term) ? $term['term_id'] : $term);
+        wp_set_post_categories($post_id, [$tid]);
     }
 
     update_post_meta($post_id, '_srm_format', 'seo');
