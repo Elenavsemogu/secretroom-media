@@ -29,6 +29,13 @@ function srm_format($post_id = null) {
     return in_array($f, ['main', 'tg', 'promo', 'seo'], true) ? $f : 'main';
 }
 
+add_filter('body_class', function ($classes) {
+    if (is_singular('post') && srm_format() === 'seo') {
+        $classes[] = 'srm-format-seo';
+    }
+    return $classes;
+});
+
 function srm_logo_url() {
     return SRM_THEME_URI . '/assets/logo.png';
 }

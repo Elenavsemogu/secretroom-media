@@ -107,7 +107,7 @@ add_filter('document_title_parts', function ($parts) {
  * Auto-import bundled SEO guides once after theme update.
  */
 add_action('init', function () {
-    if (get_option('srm_seo_articles_imported') === '1.4.1') {
+    if (get_option('srm_seo_articles_imported') === '1.4.2') {
         return;
     }
     // Avoid running during AJAX/cron noise before DB is ready.
@@ -118,7 +118,7 @@ add_action('init', function () {
         return;
     }
     srm_import_seo_articles();
-    update_option('srm_seo_articles_imported', '1.4.1');
+    update_option('srm_seo_articles_imported', '1.4.2');
     // Clear cached ID list.
     // (srm_seo_post_ids uses a static; next request will refresh.)
 }, 40);
@@ -142,7 +142,7 @@ function srm_seo_import_page() {
     if (isset($_POST['srm_seo_import']) && check_admin_referer('srm_seo_import_action')) {
         delete_option('srm_seo_articles_imported');
         $n = srm_import_seo_articles();
-        update_option('srm_seo_articles_imported', '1.4.1');
+        update_option('srm_seo_articles_imported', '1.4.2');
         $msg = sprintf(
             'Импортировано новых SEO-статей: %d. Они не на главной, но в конце списка «Статьи» и по адресу /seo/…',
             $n
@@ -225,12 +225,18 @@ function srm_seed_seo_article($a) {
             update_post_meta($existing->ID, '_srm_seo_keywords', sanitize_text_field($a['keywords']));
         }
         // Refresh content from bundled seed when re-importing.
+        // Excerpt stays empty: Description is meta-only, not a visible dek.
         if (!empty($a['content'])) {
             wp_update_post([
                 'ID'           => $existing->ID,
                 'post_content' => $a['content'],
-                'post_excerpt' => $a['excerpt'] ?? ($a['description'] ?? ''),
+                'post_excerpt' => '',
                 'post_title'   => $a['title'] ?? get_the_title($existing),
+            ]);
+        } else {
+            wp_update_post([
+                'ID'           => $existing->ID,
+                'post_excerpt' => '',
             ]);
         }
         return false;
@@ -240,7 +246,7 @@ function srm_seed_seo_article($a) {
         'post_title'   => $a['title'],
         'post_name'    => $slug,
         'post_content' => $a['content'] ?? '',
-        'post_excerpt' => $a['excerpt'] ?? ($a['description'] ?? ''),
+        'post_excerpt' => '',
         'post_status'  => 'publish',
         'post_type'    => 'post',
     ], true);

@@ -95,45 +95,24 @@ def parse_meta(raw: str) -> tuple[str, str, str]:
     return title, desc, body
 
 
-def extract_images(body: str, slug: str, alts: list[str]) -> tuple[str, list[dict]]:
-    """Replace ![ ][imageN] + data URIs with local files."""
-    IMG_DIR.mkdir(parents=True, exist_ok=True)
-    refs: dict[str, str] = {}
-    for m in re.finditer(
-        r"\[(image\d+)\]:\s*<data:image/(png|jpe?g|webp|gif);base64,([A-Za-z0-9+/=\s]+)>",
-        body,
-        re.I,
-    ):
-        refs[m.group(1)] = (m.group(2).lower().replace("jpeg", "jpg"), re.sub(r"\s+", "", m.group(3)))
+def strip_draft_images(body: str) -> str:
+    """Drop draft screenshots / recommended images — SEO articles are text-only.
 
-    saved = []
-    alt_i = 0
-
-    def repl_img(match: re.Match) -> str:
-        nonlocal alt_i
-        ref = match.group(1)
-        if ref not in refs:
-            return ""
-        ext, b64 = refs[ref]
-        idx = len(saved) + 1
-        fname = f"{slug}-{idx}.{ext}"
-        path = IMG_DIR / fname
-        path.write_bytes(base64.b64decode(b64))
-        alt = alts[alt_i % len(alts)]
-        alt_i += 1
-        saved.append({"file": fname, "alt": alt})
-        return f'![{alt}](images/{fname})'
-
-    # Remove bare image refs like ![][image1]
-    body = re.sub(r"!\[.*?\]\[(image\d+)\]", repl_img, body)
-    # Drop data URI definitions
+    Source MD includes acceptance screenshots and layout placeholders at the end;
+    editors asked not to publish them (text-only handoff).
+    """
+    # Remove markdown image refs like ![][image1] or ![alt][image2]
+    body = re.sub(r"!\[.*?\]\[image\d+\]\s*", "", body)
+    # Drop base64 data-URI definitions (can be multi-megabyte)
     body = re.sub(
         r"\[image\d+\]:\s*<data:image/[^>]+>\s*",
         "",
         body,
         flags=re.I,
     )
-    return body, saved
+    # Any leftover inline data images
+    body = re.sub(r"!\[[^\]]*\]\(<data:image/[^>]+>\)\s*", "", body, flags=re.I)
+    return body
 
 
 def clean_instructions(body: str) -> str:
@@ -164,6 +143,11 @@ def clean_instructions(body: str) -> str:
     body = body.replace(r"\$", "$")
     # Collapse excessive blank lines
     body = re.sub(r"\n{3,}", "\n\n", body)
+    # Fix broken emphasis left by draft edits (e.g. не **является → не является)
+    body = re.sub(r"не\s+\*\*является", "не является", body)
+    # Trailing *** after italic open (*) leaves stray ** in HTML
+    body = re.sub(r"\*{2,}\s*$", "", body, flags=re.M)
+    body = re.sub(r"\*\*(\s*[.。])", r"\1", body)
     return body.strip() + "\n"
 
 
@@ -181,6 +165,9 @@ def md_to_html(body: str) -> str:
         flags=re.S,
     )
     # Soften strong spam: leave as-is (content intentional for SEO)
+    # Clean stray ** left by broken draft markdown (unclosed bold)
+    html = re.sub(r"</em>\s*\*\*", "</em>", html)
+    html = re.sub(r"\*\*", "", html)
     return html
 
 
@@ -269,12 +256,17 @@ def main() -> None:
         if not description:
             description = cfg["h1_fallback"]
 
-        body, images = extract_images(body, cfg["slug"], cfg["alt_cycle"])
+        # Text-only: drop acceptance screenshots / recommended draft images.
+        body = strip_draft_images(body)
         body = clean_instructions(body)
         html = md_to_html(body)
         h1, body_html = strip_h1(html)
         if not h1:
             h1 = cfg["h1_fallback"]
+        # Description stays in <meta>, never in visible body/excerpt.
+        body_html = re.sub(r"<p>\s*<img\b[^>]*>\s*(?:<br\s*/?>\s*<img\b[^>]*>\s*)*</p>", "", body_html, flags=re.I)
+        body_html = re.sub(r"<p>\s*<img\b[^>]*>\s*</p>", "", body_html, flags=re.I)
+        body_html = re.sub(r"<img\b[^>]*>", "", body_html, flags=re.I)
 
         meta = {
             "slug": cfg["slug"],
@@ -285,15 +277,6 @@ def main() -> None:
         page = build_static_page(meta, h1, body_html)
         (SEO_DIR / f"{cfg['slug']}.html").write_text(page, encoding="utf-8")
 
-        # Copy images into WP theme assets too
-        wp_img = ROOT / "wordpress" / "secretroom-media" / "assets" / "seo"
-        wp_img.mkdir(parents=True, exist_ok=True)
-        for im in images:
-            src = IMG_DIR / im["file"]
-            if src.exists():
-                (wp_img / im["file"]).write_bytes(src.read_bytes())
-
-        excerpt = description[:180]
         wp_items.append(
             {
                 "slug": cfg["slug"],
@@ -301,7 +284,7 @@ def main() -> None:
                 "seo_title": seo_title,
                 "description": description,
                 "keywords": cfg["keywords"],
-                "excerpt": excerpt,
+                "excerpt": "",
                 "content": html_for_wp(body_html),
             }
         )
@@ -311,12 +294,12 @@ def main() -> None:
                 "title": seo_title,
                 "description": description,
                 "keywords": cfg["keywords"],
-                "intro": excerpt,
+                "intro": description[:180],
                 "h1": h1,
-                "images": images,
+                "images": [],
             }
         )
-        print(f"OK {cfg['slug']}: {len(body_html)} chars html, {len(images)} images")
+        print(f"OK {cfg['slug']}: {len(body_html)} chars html, text-only (no images)")
 
     json_path = ROOT / "wordpress" / "secretroom-media" / "inc" / "seo-articles-data.json"
     json_path.write_text(json.dumps(wp_items, ensure_ascii=False, indent=2), encoding="utf-8")

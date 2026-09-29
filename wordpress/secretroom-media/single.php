@@ -31,7 +31,8 @@ while (have_posts()) : the_post();
         <span class="badge cat"><?php echo esc_html($cat); ?></span>
       <?php endif; ?>
       <h1 class="display" style="font-size:clamp(32px,5vw,56px);margin:14px 0 12px;text-transform:uppercase"><?php the_title(); ?></h1>
-      <?php if (has_excerpt()) : ?>
+      <?php /* SEO: Description is meta-only — never show as dek under the title. */ ?>
+      <?php if (!$is_seo && has_excerpt()) : ?>
         <p class="dek" style="font-size:18px;max-width:60ch;margin-bottom:14px"><?php echo esc_html(get_the_excerpt()); ?></p>
       <?php endif; ?>
       <div class="meta" style="color:var(--gray);font-weight:700;font-size:14px">
