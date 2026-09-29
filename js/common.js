@@ -49,7 +49,7 @@ function srmHeader(active) {
 
 function srmFooter() {
   // скрытые SEO-ссылки: не видны юзеру (class seo-hidden), но доступны краулеру
-  const seo = (window.SRM_SEO_ARTICLES || []).map(s =>
+  const seo = (window.SRM_STORE ? SRM_STORE.seoCatalog() : (window.SRM_SEO_ARTICLES || [])).map(s =>
     `<a href="seo/${s.slug}.html">${s.title}</a>`).join("");
   return `
   <footer class="site-footer"><div class="wrap">

@@ -5,12 +5,15 @@ if (!defined('ABSPATH')) {
 
 add_action('init', function () {
     $post_metas = [
-        '_srm_format'    => 'string',
-        '_srm_accent'    => 'string',
-        '_srm_emoji'     => 'string',
-        '_srm_read_time' => 'integer',
-        '_srm_partner_link' => 'string',
-        '_srm_featured'  => 'boolean',
+        '_srm_format'           => 'string',
+        '_srm_accent'           => 'string',
+        '_srm_emoji'            => 'string',
+        '_srm_read_time'        => 'integer',
+        '_srm_partner_link'     => 'string',
+        '_srm_featured'         => 'boolean',
+        '_srm_seo_title'        => 'string',
+        '_srm_seo_description'  => 'string',
+        '_srm_seo_keywords'     => 'string',
     ];
     foreach ($post_metas as $key => $type) {
         register_post_meta('post', $key, [
@@ -67,14 +70,19 @@ function srm_render_post_metabox($post) {
     $read   = get_post_meta($post->ID, '_srm_read_time', true);
     $link   = get_post_meta($post->ID, '_srm_partner_link', true);
     $feat   = get_post_meta($post->ID, '_srm_featured', true);
+    $seo_t  = get_post_meta($post->ID, '_srm_seo_title', true);
+    $seo_d  = get_post_meta($post->ID, '_srm_seo_description', true);
+    $seo_k  = get_post_meta($post->ID, '_srm_seo_keywords', true);
     ?>
     <p><label>Формат<br>
-      <select name="srm_format" style="width:100%">
+      <select name="srm_format" style="width:100%" id="srm_format">
         <option value="main" <?php selected($format, 'main'); ?>>Основная статья</option>
         <option value="tg" <?php selected($format, 'tg'); ?>>Из Telegram (сайдбар)</option>
         <option value="promo" <?php selected($format, 'promo'); ?>>Реклама / посев</option>
+        <option value="seo" <?php selected($format, 'seo'); ?>>SEO (не на главной, в конце «Статьи»)</option>
       </select>
     </label></p>
+    <p class="description" style="margin-top:-6px">Не попадает на главную. В разделе «Статьи» — в конце списка. URL: <code>/seo/ярлык/</code></p>
     <p><label>Акцент<br>
       <select name="srm_accent" style="width:100%">
         <?php foreach (['yellow'=>'Жёлтый','lime'=>'Лайм','pink'=>'Розовый','blue'=>'Синий'] as $k=>$l): ?>
@@ -92,6 +100,17 @@ function srm_render_post_metabox($post) {
       <input type="url" name="srm_partner_link" value="<?php echo esc_attr($link); ?>" style="width:100%">
     </label></p>
     <p><label><input type="checkbox" name="srm_featured" value="1" <?php checked($feat, '1'); ?>> В герое на главной</label></p>
+    <hr>
+    <p><strong>SEO-метки</strong> <span class="description">(для Google)</span></p>
+    <p><label>SEO-заголовок (title)<br>
+      <input type="text" name="srm_seo_title" value="<?php echo esc_attr($seo_t); ?>" style="width:100%" maxlength="70" placeholder="До ~60 символов">
+    </label></p>
+    <p><label>SEO-описание (description)<br>
+      <textarea name="srm_seo_description" rows="3" style="width:100%" maxlength="180" placeholder="До ~160 символов"><?php echo esc_textarea($seo_d); ?></textarea>
+    </label></p>
+    <p><label>Ключевые слова<br>
+      <input type="text" name="srm_seo_keywords" value="<?php echo esc_attr($seo_k); ?>" style="width:100%" placeholder="через запятую">
+    </label></p>
     <?php
 }
 
@@ -142,12 +161,19 @@ add_action('save_post_post', function ($post_id) {
     if (!current_user_can('edit_post', $post_id)) {
         return;
     }
-    update_post_meta($post_id, '_srm_format', sanitize_text_field($_POST['srm_format'] ?? 'main'));
+    $format = sanitize_text_field($_POST['srm_format'] ?? 'main');
+    if (!in_array($format, ['main', 'tg', 'promo', 'seo'], true)) {
+        $format = 'main';
+    }
+    update_post_meta($post_id, '_srm_format', $format);
     update_post_meta($post_id, '_srm_accent', sanitize_text_field($_POST['srm_accent'] ?? 'yellow'));
     update_post_meta($post_id, '_srm_emoji', sanitize_text_field($_POST['srm_emoji'] ?? '📰'));
     update_post_meta($post_id, '_srm_read_time', (int) ($_POST['srm_read_time'] ?? 0));
     update_post_meta($post_id, '_srm_partner_link', esc_url_raw($_POST['srm_partner_link'] ?? ''));
-    update_post_meta($post_id, '_srm_featured', isset($_POST['srm_featured']) ? '1' : '');
+    update_post_meta($post_id, '_srm_featured', ($format !== 'seo' && isset($_POST['srm_featured'])) ? '1' : '');
+    update_post_meta($post_id, '_srm_seo_title', sanitize_text_field($_POST['srm_seo_title'] ?? ''));
+    update_post_meta($post_id, '_srm_seo_description', sanitize_textarea_field($_POST['srm_seo_description'] ?? ''));
+    update_post_meta($post_id, '_srm_seo_keywords', sanitize_text_field($_POST['srm_seo_keywords'] ?? ''));
 });
 
 add_action('save_post_srm_service', function ($post_id) {

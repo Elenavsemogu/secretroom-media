@@ -80,7 +80,7 @@
 
   // Читайте ещё
   const more = SRM_STORE.allArticles()
-    .filter(x => x.id !== a.id && x.type !== "tg")
+    .filter(x => x.id !== a.id && x.type !== "tg" && x.type !== "seo")
     .slice(0, 4);
   document.getElementById("more").innerHTML = more.map(x => srmCardHTML(x)).join("");
 

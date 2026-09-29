@@ -25,6 +25,16 @@
     <span>© <?php echo esc_html(date('Y')); ?> Secret Room Media. Все права защищены.</span>
     <span>Материалы носят информационный и развлекательный характер</span>
   </div>
+  <?php
+  $seo_ids = function_exists('srm_seo_post_ids') ? srm_seo_post_ids() : [];
+  if ($seo_ids) :
+  ?>
+  <nav class="seo-hidden" aria-hidden="true">
+    <?php foreach ($seo_ids as $seo_id) : ?>
+      <a href="<?php echo esc_url(get_permalink($seo_id)); ?>"><?php echo esc_html(get_the_title($seo_id)); ?></a>
+    <?php endforeach; ?>
+  </nav>
+  <?php endif; ?>
 </div></footer>
 
 <?php wp_footer(); ?>

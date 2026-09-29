@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('SRM_THEME_VERSION', '1.0.1');
+define('SRM_THEME_VERSION', '1.4.1');
 define('SRM_THEME_DIR', get_template_directory());
 define('SRM_THEME_URI', get_template_directory_uri());
 
@@ -14,6 +14,7 @@ require_once SRM_THEME_DIR . '/inc/helpers.php';
 require_once SRM_THEME_DIR . '/inc/cpt.php';
 require_once SRM_THEME_DIR . '/inc/meta.php';
 require_once SRM_THEME_DIR . '/inc/seed.php';
+require_once SRM_THEME_DIR . '/inc/seo.php';
 
 add_action('after_setup_theme', function () {
     add_theme_support('title-tag');
@@ -66,6 +67,15 @@ add_action('after_switch_theme', function () {
         flush_rewrite_rules();
     }
 });
+
+/** One-time rewrite flush after SEO URL rules land (theme 1.4+). */
+add_action('init', function () {
+    if (get_option('srm_seo_rewrites_flushed') === '1.4.1') {
+        return;
+    }
+    flush_rewrite_rules(false);
+    update_option('srm_seo_rewrites_flushed', '1.4.1');
+}, 99);
 
 add_action('init', function () {
     // Soft ensure pages exist without forcing every request rewrite flush.

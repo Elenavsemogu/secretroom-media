@@ -509,21 +509,23 @@
     const body = bodyText.split(/\n\s*\n/).map(p => ({ type: "p", text: p.trim() })).filter(b => b.text);
 
     const id = $("f-id").value || ("u-" + Date.now());
+    const type = $("f-type").value;
+    const slug = slugify(title);
     const article = {
       id,
-      slug: slugify(title),
-      type: $("f-type").value,
+      slug,
+      type,
       source: $("f-source").value,
       title,
       dek: $("f-dek").value.trim(),
       category: $("f-cat").value,
-      emoji: "📰",
+      emoji: type === "seo" ? "🔎" : "📰",
       cover: $("f-cover").value || "",
       accent: $("f-accent").value,
       tgLink: $("f-link").value.trim(),
-      partnerLink: $("f-type").value === "promo" ? $("f-link").value.trim() : "",
+      partnerLink: type === "promo" ? $("f-link").value.trim() : "",
       date: new Date().toISOString().slice(0, 10),
-      author: $("f-type").value === "promo" ? "Реклама" : "Secret Room",
+      author: type === "promo" ? "Реклама" : "Secret Room",
       readTime: Math.max(1, Math.round(bodyText.split(/\s+/).length / 180)),
       tags: $("f-tags").value.split(",").map(t => t.trim()).filter(Boolean),
       seo: {
@@ -536,10 +538,65 @@
       featured: false
     };
     SRM_STORE.upsertArticle(article);
+    if (type === "seo") {
+      downloadSeoHtml(article);
+      toast("SEO-гайд сохранён. Скачан HTML — положи в seo/ и добавь URL в sitemap.xml. На сайте он будет в конце списка «Статьи».");
+    } else {
+      toast("Опубликовано ✓");
+    }
     clearDraft();
-    toast("Опубликовано ✓");
     resetForm();
     renderPosts();
+  }
+
+  function downloadSeoHtml(a) {
+    const seoTitle = (a.seo && a.seo.title) || a.title;
+    const seoDesc = (a.seo && a.seo.description) || a.dek || "";
+    const seoKeys = (a.seo && a.seo.keywords) || "";
+    const inner = a.bodyHtml || (a.body || []).map(b => `<p>${escapeHtml(b.text)}</p>`).join("\n");
+    const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(seoTitle)} — Secret Room Media</title>
+  <meta name="description" content="${escapeHtml(seoDesc)}">
+  <meta name="keywords" content="${escapeHtml(seoKeys)}">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://secretroom.media/seo/${a.slug}.html">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header class="site-header"><div class="wrap" style="justify-content:space-between">
+    <a class="logo" href="../index.html"><img class="logo-img" src="../assets/logo.png" alt="Secret Room Media"></a>
+    <a class="btn ghost" href="../articles.html">Все статьи →</a>
+  </div></header>
+  <main class="wrap article-body seo-article" style="padding-top:40px">
+    <h1 style="font-size:clamp(28px,4.2vw,48px);text-transform:uppercase;margin-bottom:20px">${escapeHtml(a.title)}</h1>
+${inner}
+    <p style="margin-top:40px"><a class="btn" href="../index.html">← На главную Secret Room Media</a></p>
+  </main>
+  <footer class="site-footer"><div class="wrap"><div class="footer-bottom"><span>© 2026 Secret Room Media</span><span>18+ · Информационный материал</span></div></div></footer>
+</body>
+</html>`;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${a.slug}.html`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
   function resetForm() {
     ["f-id","f-title","f-dek","f-link","f-tags","f-seo-title","f-seo-desc","f-seo-keys"].forEach(id => $(id).value = "");
@@ -577,15 +634,15 @@
 
   /* ---------- список постов ---------- */
   function renderPosts() {
-    const list = SRM_STORE.allArticles();
-    $("posts-count").textContent = `Всего материалов: ${list.length} (свои — редактируются и удаляются, дефолтные — только правятся поверх)`;
-    const typeLabel = { main: "Статья", tg: "из ТГ", promo: "Реклама" };
+    const list = SRM_STORE.allArticlesAdmin();
+    $("posts-count").textContent = `Всего материалов: ${list.length} (SEO-гайды — не на главной, в конце списка статей)`;
+    const typeLabel = { main: "Статья", tg: "из ТГ", promo: "Реклама", seo: "SEO-гайд" };
     $("posts-list").innerHTML = list.map(a => `
       <div class="post-row">
         <div class="em" style="background:var(--${a.accent || 'yellow'})">${a.emoji || "📰"}</div>
         <div class="info">
           <h4>${a.title}</h4>
-          <div class="m">${typeLabel[a.type]} · ${a.category} · ${srmFmtDate(a.date)} · 👁 ${SRM_STORE.viewsOf(a.id)}</div>
+          <div class="m">${typeLabel[a.type] || a.type} · ${a.category} · ${srmFmtDate(a.date)} · 👁 ${SRM_STORE.viewsOf(a.id)}</div>
         </div>
         <div class="acts">
           <button class="mini-btn" data-edit="${a.id}">Править</button>
