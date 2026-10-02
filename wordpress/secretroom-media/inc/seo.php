@@ -107,7 +107,7 @@ add_filter('document_title_parts', function ($parts) {
  * Auto-import bundled SEO guides once after theme update.
  */
 add_action('init', function () {
-    if (get_option('srm_seo_articles_imported') === '1.4.2') {
+    if (get_option('srm_seo_articles_imported') === '1.4.3') {
         return;
     }
     // Avoid running during AJAX/cron noise before DB is ready.
@@ -118,7 +118,7 @@ add_action('init', function () {
         return;
     }
     srm_import_seo_articles();
-    update_option('srm_seo_articles_imported', '1.4.2');
+    update_option('srm_seo_articles_imported', '1.4.3');
     // Clear cached ID list.
     // (srm_seo_post_ids uses a static; next request will refresh.)
 }, 40);
@@ -142,7 +142,7 @@ function srm_seo_import_page() {
     if (isset($_POST['srm_seo_import']) && check_admin_referer('srm_seo_import_action')) {
         delete_option('srm_seo_articles_imported');
         $n = srm_import_seo_articles();
-        update_option('srm_seo_articles_imported', '1.4.2');
+        update_option('srm_seo_articles_imported', '1.4.3');
         $msg = sprintf(
             'Импортировано новых SEO-статей: %d. Они не на главной, но в конце списка «Статьи» и по адресу /seo/…',
             $n
