@@ -18,61 +18,44 @@ ROOT = Path("/workspace")
 SEO_DIR = ROOT / "seo"
 IMG_DIR = ROOT / "seo" / "images"
 
+# Convert only drafts present in uploads/; merge into existing seed JSON by slug.
 ARTICLES = [
     {
-        "file": "Copy_of____________________________________-_________________________________b7d5.md",
-        "slug": "kak-vybrat-provajdera-online-kazino",
-        "h1_fallback": "Как выбрать провайдера для онлайн-казино: полный гайд операторов",
-        "keywords": "провайдеры казино, онлайн казино под ключ, софт для казино, white label казино, провайдеры онлайн казино",
-        "alt_cycle": [
-            "провайдеры казино",
-            "онлайн казино под ключ",
-            "софт для казино",
-            "казино под ключ",
-            "софт для онлайн казино",
-            "white label казино",
-            "провайдеры онлайн казино",
-            "провайдер казино",
-        ],
+        "file": "______White_Label____________________________________________________________2_3________1048.md",
+        "slug": "white-label-kazino-zapusk-2-3-mesyaca",
+        "h1_fallback": "White Label решения для казино: как запустить казино с чужим софтом за 2–3 месяца",
+        "keywords": "white label казино, онлайн казино под ключ, казино под ключ, создать онлайн казино, готовое онлайн казино, запуск онлайн казино, white label igaming",
     },
     {
-        "file": "Copy_of_________________________iGaming________________________________________________eb74.md",
-        "slug": "partnerskie-programmy-igaming-komissii",
-        "h1_fallback": "Партнерские программы в iGaming: структура, комиссии и правила выбора партнера",
-        "keywords": "гемблинг партнерки, партнерки казино, партнерская программа казино, партнерка онлайн казино, казино партнерки",
-        "alt_cycle": [
-            "гемблинг партнерки",
-            "партнерки казино",
-            "партнерская программа казино",
-            "партнерка казино",
-            "партнерские программы гемблинг",
-            "партнерка онлайн казино",
-            "гемблинг партнерка",
-            "партнерская программа онлайн казино",
-            "казино партнерки",
-            "казино партнерка",
-        ],
+        "file": "Copy_of___________-_________________________________________________________________________________________5595.md",
+        "slug": "antidetekt-brauzery-arbitrazh-multiakkaunting",
+        "h1_fallback": "Антидетект-браузеры для арбитража и мультиаккаунтинга: как работают, какой выбрать и как проверить",
+        "keywords": "антидетект браузер, антидетект браузеры, антидетект браузер для арбитража, браузер для мультиаккаунтинга, мультиаккаунтинг, антидетект для арбитража",
     },
     {
-        "file": "Copy_of___________________________________-20_____________________________________2026______fabf.md",
-        "slug": "provajdery-slotov-top-20-2026",
-        "h1_fallback": "Провайдеры слотов для казино: ТОП-20 мировых и локальных разработчиков в 2026 году",
-        "keywords": "провайдеры казино, провайдеры слотов, провайдеры онлайн казино, лучшие провайдеры казино, провайдеры игровых автоматов",
-        "alt_cycle": [
-            "провайдеры казино",
-            "провайдеры слотов",
-            "провайдеры онлайн казино",
-            "лучшие провайдеры казино",
-            "провайдеры игровых автоматов",
-            "провайдеры игрового софта для онлайн казино",
-        ],
+        "file": "Copy_of__________________________________________________________________________________________5103.md",
+        "slug": "licenzirovanie-kazino-malta-kipr-kyurasao-filippiny",
+        "h1_fallback": "Лицензирование казино по странам: Мальта, Кипр, Кюрасао, Филиппины и лучшие альтернативы",
+        "keywords": "лицензия на онлайн казино, лицензия онлайн казино, игорная лицензия Кюрасао, игорная лицензия Мальта, лицензия для онлайн казино, лицензия для казино, лицензия на игорный бизнес",
     },
 ]
 
-# Internal cross-links (slug of provider-guide article)
-GUIDE_SLUG = "kak-vybrat-provajdera-online-kazino"
-GUIDE_URL_STATIC = f"{GUIDE_SLUG}.html"
-GUIDE_ANCHOR_TEXT = "как выбрать провайдера для онлайн-казино"
+# Internal cross-links → published SEO URLs
+CROSS_LINKS = [
+    # (google doc id fragment or None, anchor text regex, static html, wp path)
+    (
+        "1gXcKRGXH9RTo0okZejxY5JaHZjguLBgr0Q9VZsbtQlc",
+        r"как выбрать провайдера|собрать портфель провайдеров|полный гайд операторов",
+        "kak-vybrat-provajdera-online-kazino.html",
+        "/seo/kak-vybrat-provajdera-online-kazino/",
+    ),
+    (
+        "147VUGvD0pXIECCyJC8d7AXgdaCW0NetYaqH_4lcLaM8",
+        r"провайдеры слотов|ведущие провайдеры слотов|ТОП-20",
+        "provajdery-slotov-top-20-2026.html",
+        "/seo/provajdery-slotov-top-20-2026/",
+    ),
+]
 
 
 def parse_meta(raw: str) -> tuple[str, str, str]:
@@ -129,10 +112,24 @@ def clean_instructions(body: str) -> str:
         body,
         flags=re.M,
     )
-    # Replace Google Docs links that pointed to the provider guide
+    # Replace Google Docs draft links with published SEO article URLs
+    for doc_id, _anchor_re, static_url, _wp in CROSS_LINKS:
+        body = re.sub(
+            rf"\[([^\]]+)\]\(https://docs\.google\.com/document/d/{re.escape(doc_id)}[^)]*\)",
+            lambda m, u=static_url: f"[{m.group(1)}]({u})",
+            body,
+            flags=re.I,
+        )
+    # Fallback by anchor text if doc id missing/changed
     body = re.sub(
         r"\[([^\]]*(?:как выбрать провайдера|собрать портфель провайдеров)[^\]]*)\]\(https://docs\.google\.com/document/[^)]+\)",
-        lambda m: f"[{m.group(1)}]({GUIDE_URL_STATIC})",
+        r"[\1](kak-vybrat-provajdera-online-kazino.html)",
+        body,
+        flags=re.I,
+    )
+    body = re.sub(
+        r"\[([^\]]*(?:провайдеры слотов|ведущие провайдеры слотов)[^\]]*)\]\(https://docs\.google\.com/document/[^)]+\)",
+        r"[\1](provajdery-slotov-top-20-2026.html)",
         body,
         flags=re.I,
     )
@@ -187,11 +184,8 @@ def wp_permalink_placeholder(slug: str) -> str:
 def html_for_wp(html: str) -> str:
     # Point relative image and article links to WP-friendly paths
     html = html.replace('src="images/', 'src="/wp-content/themes/secretroom-media/assets/seo/')
-    html = re.sub(
-        rf'href="{re.escape(GUIDE_URL_STATIC)}"',
-        f'href="{wp_permalink_placeholder(GUIDE_SLUG)}"',
-        html,
-    )
+    for _doc, _re, static_url, wp_url in CROSS_LINKS:
+        html = html.replace(f'href="{static_url}"', f'href="{wp_url}"')
     return html
 
 
@@ -245,25 +239,37 @@ def build_static_page(meta: dict, h1: str, body_html: str) -> str:
 
 def main() -> None:
     SEO_DIR.mkdir(parents=True, exist_ok=True)
-    catalog = []
-    wp_items = []
+    json_path = ROOT / "wordpress" / "secretroom-media" / "inc" / "seo-articles-data.json"
+    catalog_path = ROOT / "data" / "seo-articles.json"
+
+    # Merge into existing seed so a new batch keeps prior guides.
+    existing_wp: dict[str, dict] = {}
+    if json_path.exists():
+        for item in json.loads(json_path.read_text(encoding="utf-8")):
+            existing_wp[item["slug"]] = item
+    existing_catalog: dict[str, dict] = {}
+    if catalog_path.exists():
+        for item in json.loads(catalog_path.read_text(encoding="utf-8")):
+            existing_catalog[item["slug"]] = item
 
     for cfg in ARTICLES:
-        raw = (UPLOADS / cfg["file"]).read_text(encoding="utf-8")
+        src = UPLOADS / cfg["file"]
+        if not src.exists():
+            print(f"SKIP missing upload: {cfg['file']}")
+            continue
+        raw = src.read_text(encoding="utf-8")
         seo_title, description, body = parse_meta(raw)
         if not seo_title:
             seo_title = cfg["h1_fallback"]
         if not description:
             description = cfg["h1_fallback"]
 
-        # Text-only: drop acceptance screenshots / recommended draft images.
         body = strip_draft_images(body)
         body = clean_instructions(body)
         html = md_to_html(body)
         h1, body_html = strip_h1(html)
         if not h1:
             h1 = cfg["h1_fallback"]
-        # Description stays in <meta>, never in visible body/excerpt.
         body_html = re.sub(r"<p>\s*<img\b[^>]*>\s*(?:<br\s*/?>\s*<img\b[^>]*>\s*)*</p>", "", body_html, flags=re.I)
         body_html = re.sub(r"<p>\s*<img\b[^>]*>\s*</p>", "", body_html, flags=re.I)
         body_html = re.sub(r"<img\b[^>]*>", "", body_html, flags=re.I)
@@ -274,40 +280,49 @@ def main() -> None:
             "description": description,
             "keywords": cfg["keywords"],
         }
-        page = build_static_page(meta, h1, body_html)
-        (SEO_DIR / f"{cfg['slug']}.html").write_text(page, encoding="utf-8")
+        (SEO_DIR / f"{cfg['slug']}.html").write_text(
+            build_static_page(meta, h1, body_html), encoding="utf-8"
+        )
 
-        wp_items.append(
-            {
-                "slug": cfg["slug"],
-                "title": h1,
-                "seo_title": seo_title,
-                "description": description,
-                "keywords": cfg["keywords"],
-                "excerpt": "",
-                "content": html_for_wp(body_html),
-            }
-        )
-        catalog.append(
-            {
-                "slug": cfg["slug"],
-                "title": seo_title,
-                "description": description,
-                "keywords": cfg["keywords"],
-                "intro": description[:180],
-                "h1": h1,
-                "images": [],
-            }
-        )
+        existing_wp[cfg["slug"]] = {
+            "slug": cfg["slug"],
+            "title": h1,
+            "seo_title": seo_title,
+            "description": description,
+            "keywords": cfg["keywords"],
+            "excerpt": "",
+            "content": html_for_wp(body_html),
+        }
+        existing_catalog[cfg["slug"]] = {
+            "slug": cfg["slug"],
+            "title": seo_title,
+            "description": description,
+            "keywords": cfg["keywords"],
+            "intro": description[:180],
+            "h1": h1,
+            "images": [],
+        }
         print(f"OK {cfg['slug']}: {len(body_html)} chars html, text-only (no images)")
 
-    json_path = ROOT / "wordpress" / "secretroom-media" / "inc" / "seo-articles-data.json"
+    preferred = [
+        "kak-vybrat-provajdera-online-kazino",
+        "partnerskie-programmy-igaming-komissii",
+        "provajdery-slotov-top-20-2026",
+        "white-label-kazino-zapusk-2-3-mesyaca",
+        "antidetekt-brauzery-arbitrazh-multiakkaunting",
+        "licenzirovanie-kazino-malta-kipr-kyurasao-filippiny",
+    ]
+    ordered = [s for s in preferred if s in existing_wp] + [
+        s for s in existing_wp if s not in preferred
+    ]
+    wp_items = [existing_wp[s] for s in ordered]
+    catalog = [existing_catalog[s] for s in ordered if s in existing_catalog]
+
     json_path.write_text(json.dumps(wp_items, ensure_ascii=False, indent=2), encoding="utf-8")
-    (ROOT / "data" / "seo-articles.json").write_text(
-        json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    print("Wrote", json_path)
-    print("Wrote data/seo-articles.json")
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("Wrote", json_path, f"({len(wp_items)} articles)")
+    print("Wrote", catalog_path)
 
 
 if __name__ == "__main__":
